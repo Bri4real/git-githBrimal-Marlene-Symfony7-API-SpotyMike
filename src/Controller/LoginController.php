@@ -31,6 +31,7 @@ class LoginController extends AbstractController
         
     // use Symfony\Component\HttpFoundation\Request;
     #[Route('/login', name: 'app_login_post', methods: ['POST', 'PUT'])]
+    
     public function login(Request $request): JsonResponse
     {
 
