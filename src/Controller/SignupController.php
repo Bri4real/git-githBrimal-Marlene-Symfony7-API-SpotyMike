@@ -25,16 +25,15 @@ class SignUpController extends AbstractController
     #[Route('/signup', name: 'app_signup', methods: ['POST'])]
     public function signUp(Request $request): JsonResponse
     {
-        // Obtenir les données de la requête
+      
         $requestData = $request->request->all();
 
-        // Vérifier si les clés existent avant d'y accéder
         if (!isset($requestData['tel']) || !isset($requestData['name']) || !isset($requestData['email']) || !isset($requestData['idUser']) || !isset($requestData['encrypte'])) {
             return $this->json(['error' => 'Veuillez remplir tous les champs '], 400);
         }
         
 
-        // Validation du numéro de téléphone
+        
         $phoneNumber = $requestData['tel'];
         $violations = $this->validator->validate($phoneNumber, [
             new Regex([
@@ -55,7 +54,7 @@ class SignUpController extends AbstractController
         $user->setEmail($requestData['email']);
         $user->setIdUser($requestData['idUser']);
         $user->setEncrypte($requestData['encrypte']);
-        $user->setTel($phoneNumber); // Utilisation du numéro de téléphone valide
+        $user->setTel($phoneNumber); 
         $user->setCreateAt(new \DateTimeImmutable());
         $user->setUpdateAt(new \DateTime());
 
@@ -64,7 +63,7 @@ class SignUpController extends AbstractController
         $this->entityManager->flush();
 
         return $this->json([
-            'message' => 'Inscription effectuée avec succès',
+            'message' => 'Inscription effectuee avec succès',
             'user' => $user,
         ]);
     }
