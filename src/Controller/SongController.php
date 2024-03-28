@@ -2,94 +2,91 @@
 namespace App\Controller;
 
 use App\Entity\Song;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class SongController extends AbstractController
 {
-    private $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    #[Route('/songs', name: 'create_song', methods: ['POST'])]
+    public function create(Request $request): Response
     {
-        $this->entityManager = $entityManager;
-    }
+        $entityManager = $this->getDoctrine()->getManager();
 
-    #[Route('/songs', name: 'song_index', methods: ['GET'])]
-    public function index(): JsonResponse
-    {
-        $songs = $this->getDoctrine()->getRepository(Song::class)->findAll();
-
-        $data = [];
-        foreach ($songs as $song) {
-            $data[] = [
-                'id' => $song->getId(),
-                'title' => $song->getTitle(),
-                'url' => $song->getUrl(),
-                'cover' => $song->getCover(),
-                // Ajoutez d'autres champs de chanson si nécessaire
-            ];
-        }
-
-        return new JsonResponse($data);
-    }
-
-    #[Route('/songs/{id}', name: 'song_show', methods: ['GET'])]
-    public function show(Song $song): JsonResponse
-    {
-        $data = [
-            'id' => $song->getId(),
-            'title' => $song->getTitle(),
-            'url' => $song->getUrl(),
-            'cover' => $song->getCover(),
-            // Ajoutez d'autres champs de chanson si nécessaire
-        ];
-
-        return new JsonResponse($data);
-    }
-
-    #[Route('/songs', name: 'song_new', methods: ['POST'])]
-    public function new(Request $request): JsonResponse
-    {
         $requestData = json_decode($request->getContent(), true);
 
         $song = new Song();
+        $song->setIdSong($requestData['idSong']);
         $song->setTitle($requestData['title']);
         $song->setUrl($requestData['url']);
         $song->setCover($requestData['cover']);
-        // Ajoutez d'autres champs de chanson si nécessaire
+        $song->setVisibility($requestData['visibility']);
+        $song->setCreateAt(new \DateTimeImmutable());
 
-        $entityManager = $this->getDoctrine()->getManager();
         $entityManager->persist($song);
         $entityManager->flush();
 
-        return new JsonResponse(['message' => 'Song created successfully']);
+        return $this->json(['message' => 'Song created successfully'], Response::HTTP_CREATED);
     }
 
-    #[Route('/songs/{id}', name: 'song_edit', methods: ['PUT'])]
-    public function edit(Request $request, Song $song): JsonResponse
+    #[Route('/songs/{id}', name: 'get_song', methods: ['GET'])]
+    public function get(int $id): Response
     {
+        $song = $this->getDoctrine()->getRepository(Song::class)->find($id);
+
+        if (!$song) {
+            return $this->json(['error' => 'Song not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->json($song);
+    }
+
+    #[Route('/songs', name: 'get_songs', methods: ['GET'])]
+    public function getAll(): Response
+    {
+        $songs = $this->getDoctrine()->getRepository(Song::class)->findAll();
+
+        return $this->json($songs);
+    }
+
+    #[Route('/songs/{id}', name: 'update_song', methods: ['PUT'])]
+    public function update(Request $request, int $id): Response
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+        $song = $entityManager->getRepository(Song::class)->find($id);
+
+        if (!$song) {
+            return $this->json(['error' => 'Song not found'], Response::HTTP_NOT_FOUND);
+        }
+
         $requestData = json_decode($request->getContent(), true);
 
+        $song->setIdSong($requestData['idSong']);
         $song->setTitle($requestData['title']);
         $song->setUrl($requestData['url']);
         $song->setCover($requestData['cover']);
-        // Mettez à jour d'autres champs de chanson si nécessaire
+        $song->setVisibility($requestData['visibility']);
+        // Mettre à jour d'autres attributs si nécessaire
 
-        $this->getDoctrine()->getManager()->flush();
+        $entityManager->flush();
 
-        return new JsonResponse(['message' => 'Song updated successfully']);
+        return $this->json(['message' => 'Song updated successfully']);
     }
 
-    #[Route('/songs/{id}', name: 'song_delete', methods: ['DELETE'])]
-    public function delete(Song $song): JsonResponse
+    #[Route('/songs/{id}', name: 'delete_song', methods: ['DELETE'])]
+    public function delete(int $id): Response
     {
         $entityManager = $this->getDoctrine()->getManager();
+        $song = $entityManager->getRepository(Song::class)->find($id);
+
+        if (!$song) {
+            return $this->json(['error' => 'Song not found'], Response::HTTP_NOT_FOUND);
+        }
+
         $entityManager->remove($song);
         $entityManager->flush();
 
-        return new JsonResponse(['message' => 'Song deleted successfully']);
+        return $this->json(['message' => 'Song deleted successfully']);
     }
 }
