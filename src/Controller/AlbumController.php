@@ -1,51 +1,39 @@
 <?php
-
-//namespace App\Controller;
-
-//use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-//use Symfony\Component\HttpFoundation\JsonResponse;
-//use Symfony\Component\Routing\Attribute\Route;
-
-//class AlbumController extends AbstractController
-//{
-  //  #[Route('/album', name: 'app_album')]
-    // public function index(): JsonResponse
-    // {
-       //  return $this->json([
-           // 'message' => 'Welcome to your new controller!',
-             //'path' => 'src/Controller/AlbumController.php',
-        // ]);
-  //  }
-// }
-
-
-
 namespace App\Controller;
 
 use App\Entity\Album;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class AlbumController extends AbstractController
 {
-    /**
-     * @Route("/albums", name="album_index", methods={"GET"})
-     */
-    public function index(): Response
+    private $repository;
+    private $entityManager;
+    public function __construct(EntityManagerInterface $entityManager){
+        $this->entityManager = $entityManager;
+        $this->repository = $entityManager->getRepository(Album::class);
+    }
+    
+    #[Route('/albums', name: 'album_index', methods: 'GET')]
+    public function index(): JsonResponse
     {
         // Récupère tous les albums depuis la base de données
-        $albums = $this->getDoctrine()->getRepository(Album::class)->findAll();
+        $albums =$this->repository->findAll();
 
         // Retourne les albums sous forme de JSON
         return $this->json($albums);
     }
 
+   
+
     /**
      * @Route("/albums/{id}", name="album_show", methods={"GET"})
      */
-    public function show(Album $album): Response
+    public function show(Album $album): JsonResponse
     {
         // Retourne les détails d'un album spécifique sous forme de JSON
         return $this->json($album);
@@ -54,7 +42,7 @@ class AlbumController extends AbstractController
     /**
      * @Route("/albums", name="album_create", methods={"POST"})
      */
-    public function create(Request $request): Response
+    public function create(Request $request): JsonResponse
     {
         // Récupère les données JSON envoyées dans la requête
         $data = json_decode($request->getContent(), true);
@@ -67,9 +55,8 @@ class AlbumController extends AbstractController
         $album->setYear($data['year']);
 
         // Obtient le gestionnaire d'entités et persiste l'album dans la base de données
-        $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->persist($album);
-        $entityManager->flush();
+         $this->entityManager->persist($album);
+         $this->entityManager->flush();
 
         // Retourne les données de l'album créé sous forme de JSON
         return $this->json($album);
@@ -78,7 +65,7 @@ class AlbumController extends AbstractController
     /**
      * @Route("/albums/{id}", name="album_update", methods={"PUT"})
      */
-    public function update(Request $request, Album $album): Response
+    public function update(Request $request, Album $album): JsonResponse
     {
         // Récupère les données JSON envoyées dans la requête
         $data = json_decode($request->getContent(), true);
@@ -90,8 +77,8 @@ class AlbumController extends AbstractController
         $album->setYear($data['year'] ?? $album->getYear());
 
         // Obtient le gestionnaire d'entités et met à jour l'album dans la base de données
-        $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->flush();
+        $this->entityManager->persist($album);
+        $this->entityManager->flush();
 
         // Retourne les données de l'album mis à jour sous forme de JSON
         return $this->json($album);
@@ -100,13 +87,12 @@ class AlbumController extends AbstractController
     /**
      * @Route("/albums/{id}", name="album_delete", methods={"DELETE"})
      */
-    public function delete(Album $album): Response
+    public function delete(Album $album): Response 
     {
         // Obtient le gestionnaire d'entités et supprime l'album de la base de données
-        $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->remove($album);
-        $entityManager->flush();
-
+      
+        $this->entityManager->remove($album);
+        $this->entityManager->flush();
         // Retourne une réponse vide avec un code de statut HTTP indiquant la suppression réussie
         return new Response(null, Response::HTTP_NO_CONTENT);
     }
