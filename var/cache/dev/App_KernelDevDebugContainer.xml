@@ -222,6 +222,9 @@
         <argument type="service" id=".service_locator.jUv.zyj.App\Controller\SongController"/>
       </call>
     </service>
+    <service id="App\Controller\UserController" class="App\Controller\UserController" autowire="true" autoconfigure="true">
+      <tag name="container.error" message="The autoloader expected class &quot;App\Controller\UserController&quot; to be defined in file &quot;/Users/brimalmartin/ESIEA PROJECTS/git-githBrimal-Marlene-Symfony7-API-SpotyMike/vendor/composer/../../src/Controller/UserController.php&quot;. The file was found but the class was not in it, the class name or namespace probably has a typo."/>
+    </service>
     <service id="App\Repository\AlbumRepository" class="App\Repository\AlbumRepository" autowire="true" autoconfigure="true">
       <tag name="doctrine.repository_service"/>
       <argument type="service" id="doctrine"/>
