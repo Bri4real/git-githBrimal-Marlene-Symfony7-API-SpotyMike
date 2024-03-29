@@ -179,17 +179,33 @@
       <tag name="controller.service_arguments"/>
       <tag name="routing.route_loader"/>
     </service>
-    <service id="App\Controller\SignUpController" class="App\Controller\SignUpController" public="true" autowire="true" autoconfigure="true">
+    <service id="App\Controller\SignupController" class="App\Controller\SignupController" public="true" autowire="true" autoconfigure="true">
       <tag name="controller.service_arguments"/>
       <tag name="container.service_subscriber"/>
       <argument type="service" id="doctrine.orm.default_entity_manager"/>
       <argument type="service" id="validator"/>
       <call method="setContainer">
-        <argument type="service" id=".service_locator.jUv.zyj.App\Controller\SignUpController"/>
+        <argument type="service" id=".service_locator.jUv.zyj.App\Controller\SignupController"/>
       </call>
     </service>
     <service id="App\Entity" class="App\Entity" abstract="true">
       <tag name="container.excluded" source="in &quot;config/services.yaml&quot;"/>
+    </service>
+    <service id="App\Controller\AlbumController" class="App\Controller\AlbumController" public="true" autowire="true" autoconfigure="true">
+      <tag name="controller.service_arguments"/>
+      <tag name="container.service_subscriber"/>
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <call method="setContainer">
+        <argument type="service" id=".service_locator.jUv.zyj.App\Controller\AlbumController"/>
+      </call>
+    </service>
+    <service id="App\Controller\ArtistController" class="App\Controller\ArtistController" public="true" autowire="true" autoconfigure="true">
+      <tag name="controller.service_arguments"/>
+      <tag name="container.service_subscriber"/>
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <call method="setContainer">
+        <argument type="service" id=".service_locator.jUv.zyj.App\Controller\ArtistController"/>
+      </call>
     </service>
     <service id="App\Controller\LoginController" class="App\Controller\LoginController" public="true" autowire="true" autoconfigure="true">
       <tag name="controller.service_arguments"/>
@@ -199,13 +215,11 @@
         <argument type="service" id=".service_locator.jUv.zyj.App\Controller\LoginController"/>
       </call>
     </service>
-    <service id="App\Controller\SignupController" class="App\Controller\SignupController" public="true" autowire="true" autoconfigure="true">
+    <service id="App\Controller\SongController" class="App\Controller\SongController" public="true" autowire="true" autoconfigure="true">
       <tag name="controller.service_arguments"/>
       <tag name="container.service_subscriber"/>
-      <argument type="service" id="doctrine.orm.default_entity_manager"/>
-      <argument type="service" id="validator"/>
       <call method="setContainer">
-        <argument type="service" id=".service_locator.jUv.zyj.App\Controller\SignupController"/>
+        <argument type="service" id=".service_locator.jUv.zyj.App\Controller\SongController"/>
       </call>
     </service>
     <service id="App\Repository\AlbumRepository" class="App\Repository\AlbumRepository" autowire="true" autoconfigure="true">
@@ -255,7 +269,7 @@
     </service>
     <service id="argument_resolver.service" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">
       <tag priority="-50" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">controller.argument_value_resolver</tag>
-      <argument type="service" id=".service_locator.L.EDYUC"/>
+      <argument type="service" id=".service_locator.Zygf3f6"/>
     </service>
     <service id="argument_resolver.default" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">
       <tag priority="-100" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">controller.argument_value_resolver</tag>
@@ -1422,7 +1436,7 @@
     </service>
     <service id="argument_resolver.not_tagged_controller" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\NotTaggedControllerValueResolver">
       <tag name="controller.argument_value_resolver" priority="-200"/>
-      <argument type="service" id=".service_locator.L.EDYUC"/>
+      <argument type="service" id=".service_locator.Zygf3f6"/>
     </service>
     <service id="routing.resolver" class="Symfony\Component\Config\Loader\LoaderResolver">
       <call method="addLoader">
@@ -3484,15 +3498,21 @@
         <argument>Hash a user password</argument>
       </call>
     </service>
-    <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\SignUpController" class="App\Controller\SignUpController" autowire="true" abstract="true"/>
-    <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\SignUpController" class="App\Controller\SignUpController" autowire="true" abstract="true"/>
-    <service id=".abstract.instanceof.App\Controller\SignUpController" class="App\Controller\SignUpController" autowire="true" autoconfigure="true" abstract="true"/>
-    <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\LoginController" class="App\Controller\LoginController" autowire="true" abstract="true"/>
-    <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\LoginController" class="App\Controller\LoginController" autowire="true" abstract="true"/>
-    <service id=".abstract.instanceof.App\Controller\LoginController" class="App\Controller\LoginController" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\SignupController" class="App\Controller\SignupController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\SignupController" class="App\Controller\SignupController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\SignupController" class="App\Controller\SignupController" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\AlbumController" class="App\Controller\AlbumController" autowire="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\AlbumController" class="App\Controller\AlbumController" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Controller\AlbumController" class="App\Controller\AlbumController" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\ArtistController" class="App\Controller\ArtistController" autowire="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\ArtistController" class="App\Controller\ArtistController" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Controller\ArtistController" class="App\Controller\ArtistController" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\LoginController" class="App\Controller\LoginController" autowire="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\LoginController" class="App\Controller\LoginController" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Controller\LoginController" class="App\Controller\LoginController" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\SongController" class="App\Controller\SongController" autowire="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\SongController" class="App\Controller\SongController" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Controller\SongController" class="App\Controller\SongController" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\AlbumRepository" class="App\Repository\AlbumRepository" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Repository\AlbumRepository" class="App\Repository\AlbumRepository" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\ArtistRepository" class="App\Repository\ArtistRepository" autowire="true" abstract="true"/>
@@ -3886,13 +3906,37 @@
         <argument key="loader" type="service_closure" id=".errored..service_locator.y4_Zrx..Symfony\Component\Config\Loader\LoaderInterface"/>
       </argument>
     </service>
-    <service id=".service_locator.L.EDYUC" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.KOhdJhL" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
+        <argument key="album" type="service_closure" id=".errored..service_locator.KOhdJhL.App\Entity\Album"/>
+      </argument>
+    </service>
+    <service id=".service_locator.v6sch5A" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="artist" type="service_closure" id=".errored..service_locator.v6sch5A.App\Entity\Artist"/>
+      </argument>
+    </service>
+    <service id=".service_locator.Zygf3f6" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="App\Controller\AlbumController::delete" type="service_closure" id=".service_locator.KOhdJhL"/>
+        <argument key="App\Controller\AlbumController::show" type="service_closure" id=".service_locator.KOhdJhL"/>
+        <argument key="App\Controller\AlbumController::update" type="service_closure" id=".service_locator.KOhdJhL"/>
+        <argument key="App\Controller\ArtistController::delete" type="service_closure" id=".service_locator.v6sch5A"/>
+        <argument key="App\Controller\ArtistController::show" type="service_closure" id=".service_locator.v6sch5A"/>
+        <argument key="App\Controller\ArtistController::update" type="service_closure" id=".service_locator.v6sch5A"/>
         <argument key="App\Kernel::loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="App\Kernel::registerContainerConfiguration" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="kernel::loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="kernel::registerContainerConfiguration" type="service_closure" id=".service_locator.y4_Zrx."/>
+        <argument key="App\Controller\AlbumController:delete" type="service_closure" id=".service_locator.KOhdJhL"/>
+        <argument key="App\Controller\AlbumController:show" type="service_closure" id=".service_locator.KOhdJhL"/>
+        <argument key="App\Controller\AlbumController:update" type="service_closure" id=".service_locator.KOhdJhL"/>
+        <argument key="App\Controller\ArtistController:delete" type="service_closure" id=".service_locator.v6sch5A"/>
+        <argument key="App\Controller\ArtistController:show" type="service_closure" id=".service_locator.v6sch5A"/>
+        <argument key="App\Controller\ArtistController:update" type="service_closure" id=".service_locator.v6sch5A"/>
         <argument key="kernel:loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="kernel:registerContainerConfiguration" type="service_closure" id=".service_locator.y4_Zrx."/>
       </argument>
@@ -4132,9 +4176,21 @@
         <argument key="security.token_storage" type="service_closure" id="security.token_storage" on-invalid="ignore"/>
       </argument>
     </service>
-    <service id=".service_locator.jUv.zyj.App\Controller\SignUpController" class="Symfony\Component\DependencyInjection\ServiceLocator">
-      <tag name="container.service_locator_context" id="App\Controller\SignUpController"/>
-      <argument>App\Controller\SignUpController</argument>
+    <service id=".service_locator.jUv.zyj.App\Controller\SignupController" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator_context" id="App\Controller\SignupController"/>
+      <argument>App\Controller\SignupController</argument>
+      <argument type="service" id="service_container"/>
+      <factory service=".service_locator.jUv.zyj" method="withContext"/>
+    </service>
+    <service id=".service_locator.jUv.zyj.App\Controller\AlbumController" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator_context" id="App\Controller\AlbumController"/>
+      <argument>App\Controller\AlbumController</argument>
+      <argument type="service" id="service_container"/>
+      <factory service=".service_locator.jUv.zyj" method="withContext"/>
+    </service>
+    <service id=".service_locator.jUv.zyj.App\Controller\ArtistController" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator_context" id="App\Controller\ArtistController"/>
+      <argument>App\Controller\ArtistController</argument>
       <argument type="service" id="service_container"/>
       <factory service=".service_locator.jUv.zyj" method="withContext"/>
     </service>
@@ -4144,9 +4200,9 @@
       <argument type="service" id="service_container"/>
       <factory service=".service_locator.jUv.zyj" method="withContext"/>
     </service>
-    <service id=".service_locator.jUv.zyj.App\Controller\SignupController" class="Symfony\Component\DependencyInjection\ServiceLocator">
-      <tag name="container.service_locator_context" id="App\Controller\SignupController"/>
-      <argument>App\Controller\SignupController</argument>
+    <service id=".service_locator.jUv.zyj.App\Controller\SongController" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator_context" id="App\Controller\SongController"/>
+      <argument>App\Controller\SongController</argument>
       <argument type="service" id="service_container"/>
       <factory service=".service_locator.jUv.zyj" method="withContext"/>
     </service>
@@ -4262,9 +4318,11 @@
       <call method="allowControllers">
         <argument type="collection">
           <argument>App\Kernel</argument>
-          <argument>App\Controller\SignUpController</argument>
-          <argument>App\Controller\LoginController</argument>
           <argument>App\Controller\SignupController</argument>
+          <argument>App\Controller\AlbumController</argument>
+          <argument>App\Controller\ArtistController</argument>
+          <argument>App\Controller\LoginController</argument>
+          <argument>App\Controller\SongController</argument>
           <argument>Doctrine\Bundle\DoctrineBundle\Controller\ProfilerController</argument>
         </argument>
       </call>
@@ -4310,6 +4368,12 @@
     <service id="debug.security.event_dispatcher.main.inner" class="Symfony\Component\EventDispatcher\EventDispatcher"/>
     <service id=".errored..service_locator.y4_Zrx..Symfony\Component\Config\Loader\LoaderInterface" class="Symfony\Component\Config\Loader\LoaderInterface">
       <tag name="container.error" message="Cannot autowire service &quot;.service_locator.y4_Zrx.&quot;: it needs an instance of &quot;Symfony\Component\Config\Loader\LoaderInterface&quot; but this type has been excluded from autowiring."/>
+    </service>
+    <service id=".errored..service_locator.KOhdJhL.App\Entity\Album" class="App\Entity\Album">
+      <tag name="container.error" message="Cannot autowire service &quot;.service_locator.KOhdJhL&quot;: it needs an instance of &quot;App\Entity\Album&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
+    </service>
+    <service id=".errored..service_locator.v6sch5A.App\Entity\Artist" class="App\Entity\Artist">
+      <tag name="container.error" message="Cannot autowire service &quot;.service_locator.v6sch5A&quot;: it needs an instance of &quot;App\Entity\Artist&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
     </service>
     <service id=".console.command.about.lazy" class="Symfony\Component\Console\Command\LazyCommand">
       <argument>about</argument>
@@ -5038,7 +5102,7 @@
     <service id="security.firewall.context_locator" alias=".service_locator.zJyh7qS"/>
     <service id="Symfony\Component\Security\Core\User\UserCheckerInterface" alias="security.user_checker"/>
     <service id="container.env_var_processors_locator" alias=".service_locator.bJ.4HC5" public="true"/>
-    <service id="argument_resolver.controller_locator" alias=".service_locator.L.EDYUC"/>
+    <service id="argument_resolver.controller_locator" alias=".service_locator.Zygf3f6"/>
     <service id="doctrine.id_generator_locator" alias=".service_locator.KLVvNIq"/>
     <service id="Psr\Log\LoggerInterface" alias="logger"/>
     <service id=".service_locator.BFrsqsn" alias=".service_locator.mAgPHiR"/>
@@ -5050,6 +5114,8 @@
     <service id="doctrine.orm.default_metadata_driver" alias=".doctrine.orm.default_metadata_driver"/>
     <service id="security.event_dispatcher.main" alias="debug.security.event_dispatcher.main"/>
     <service id=".service_locator.gFlme_s" alias=".service_locator.y4_Zrx."/>
+    <service id=".service_locator..MsFB5z" alias=".service_locator.KOhdJhL"/>
+    <service id=".service_locator.bvsSv3c" alias=".service_locator.v6sch5A"/>
     <service id=".service_locator.jxnIR8C" alias=".service_locator.jUv.zyj"/>
   </services>
 </container>
