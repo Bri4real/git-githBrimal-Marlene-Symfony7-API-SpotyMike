@@ -5,13 +5,6 @@ services:
     autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
   # Définition du service SignupController
-  App\Controller\SignupController:
-    # Injection des dépendances dans le constructeur
-    autowire: true
-    autoconfigure: true
-    arguments:
-      $entityManager: "@doctrine.orm.entity_manager"
-      $validator: "@validator"
 
   # Définition du service LoginController
   App\Controller\LoginController:

@@ -15,10 +15,6 @@ return [
             [['_route' => 'artist_update', '_controller' => 'App\\Controller\\ArtistController::update'], null, ['PUT' => 0], null, false, false, null],
             [['_route' => 'artist_delete', '_controller' => 'App\\Controller\\ArtistController::delete'], null, ['DELETE' => 0], null, false, false, null],
         ],
-        '/signup' => [
-            [['_route' => 'signup_form', '_controller' => 'App\\Controller\\RegistrationController::register'], null, null, null, false, false, null],
-            [['_route' => 'app_signup', '_controller' => 'App\\Controller\\SignupController::signUp'], null, ['POST' => 0], null, false, false, null],
-        ],
         '/login' => [[['_route' => 'app_login', '_controller' => 'App\\Controller\\SecurityController::login'], null, null, null, false, false, null]],
         '/logout' => [[['_route' => 'app_logout', '_controller' => 'App\\Controller\\SecurityController::logout'], null, null, null, false, false, null]],
         '/songs' => [

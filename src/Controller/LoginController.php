@@ -8,8 +8,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Psr\Cache\CacheItemPoolInterface;
@@ -80,13 +78,13 @@ class LoginController extends AbstractController
         if ($loginAttempts >= 5) {
             return new JsonResponse([
                 'error' => true,
-                'message' => 'Trop de tentatives sur l\'e-mail ' . $email . '. Maximum 5 tentatives. Veuillez patienter (2min)'
+                'message' => 'Trop de tentatives sur l\'e-mail ' . $email . '. (5 max). Veuillez patienter (2min)'
             ], 429);
         }
 
-        // Incrémenter le nombre de tentatives sur cet email
+
         $cacheItem->set($loginAttempts + 1);
-        $cacheItem->expiresAfter(120); // 2 minutes
+        $cacheItem->expiresAfter(120);
         $this->cache->save($cacheItem);
 
         return new JsonResponse([
