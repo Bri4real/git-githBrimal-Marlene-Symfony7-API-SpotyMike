@@ -14,7 +14,58 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+
 class UserController extends AbstractController
+{
+    #[Route('/login', name: 'login', methods: ['POST'])]
+    public function login(Request $request, UserPasswordEncoderInterface $passwordEncoder, JWTTokenManagerInterface $JWTManager): JsonResponse
+    {
+        $email = $request->request->get('email');
+        $password = $request->request->get('password');
+
+        // Vérification des données obligatoires
+        if (!$email || !$password) {
+            return $this->json(['error' => true, 'message' => 'Email and password are required'], 400);
+        }
+
+        // Récupération de l'utilisateur par email
+        $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $email]);
+
+        // Vérification de l'utilisateur
+        if (!$user) {
+            return $this->json(['error' => true, 'message' => 'Email or password incorrect'], 400);
+        }
+
+        // Vérification du mot de passe
+        if (!$passwordEncoder->isPasswordValid($user, $password)) {
+            return $this->json(['error' => true, 'message' => 'Email or password incorrect'], 400);
+        }
+
+        // Génération du token JWT
+        $token = $JWTManager->create($user);
+
+        // Construction de la réponse avec les données utilisateur et le token JWT
+        return $this->json([
+            'error' => false,
+            'message' => 'L\'utilisateur a été authentifié avec succès',
+            'user' => [
+                'firstname' => $user->getFirstname(),
+                'lastname' => $user->getLastname(),
+                'email' => $user->getEmail(),
+                'tel' => $user->getTel(),
+                'sexe' => $user->getSexe(),
+                'artist' => $user->getArtist(),
+                'dateBirth' => $user->getDateBirth()->format('Y-m-d'),
+                'createdAt' => $user->getCreatedAt()->format('Y-m-d H:i:s'),
+            ],
+            'token' => $token,
+        ]);
+    }
+}
+
+
+
+/*
 {
     private $repository;
     private $entityManager;
@@ -112,3 +163,4 @@ class UserController extends AbstractController
         }
     }
 }
+*/
