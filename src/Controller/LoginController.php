@@ -12,7 +12,6 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
 
@@ -22,7 +21,7 @@ class LoginController extends AbstractController
     private $entityManager;
     private $cache;
 
-    public function __construct(EntityManagerInterface $entityManager, AdapterInterface $cache)
+    public function __construct(EntityManagerInterface $entityManager, CacheItemPoolInterface $cache)
     {
         $this->entityManager = $entityManager;
         $this->cache = $cache;
