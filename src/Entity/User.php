@@ -19,19 +19,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     // #[ORM\Id]
-    #[ORM\Column(length: 90, unique:true)]
+    #[ORM\Column(length: 80, unique: true, nullable: true)]
     private ?string $idUser = null;
 
-    #[ORM\Column(length: 55)]
-    private ?string $name = null;
 
-    #[ORM\Column(length: 55)] 
+    #[ORM\Column(length: 55)]
     private ?string $firstname  = null;
 
     #[ORM\Column(length: 55)]
     private ?string $lastname  = null;
 
-    #[ORM\Column(length: 80, unique:true)]
+    #[ORM\Column(length: 80, unique: true)]
     private ?string $email  = null;
 
     #[ORM\Column(length: 90)]
@@ -41,16 +39,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $tel  = null;
 
 
-    #[ORM\Column(type: 'date')] 
+    #[ORM\Column(type: 'date')]
     private ?\DateTimeInterface $dateBirth  = null;
 
-    #[ORM\Column(length: 20)] 
+    #[ORM\Column(length: 20, nullable: true)]
     private ?string $sexe  = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createAt = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updateAt = null;
 
     #[ORM\OneToOne(mappedBy: 'User_idUser', cascade: ['persist', 'remove'])]
@@ -73,20 +71,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): static
-    {
-        $this->name = $name;
-
-        return $this;
-    }
 
 
-        public function getFirstname(): string
+
+    public function getFirstname(): string
     {
         return $this->firstname;
     }
@@ -171,13 +159,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->dateBirth;
     }
-    
+
     public function setDateBirth(\DateTimeInterface $dateBirth): self
     {
         $this->dateBirth = $dateBirth;
         return $this;
     }
-    
+
 
 
     public function getArtist(): ?Artist
@@ -197,36 +185,34 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getSexe(): string
+    public function getSexe(): ?string
     {
         return $this->sexe;
-    } 
+    }
 
-    public function setSexe(string $sexe): self
+    public function setSexe(?string $sexe): self
     {
-        if (!in_array($sexe, ['Homme', 'Femme', 'Autre'])) {
-            throw new \InvalidArgumentException("Invalid sexe value");
-        }
-
-        $this->sexe = $sexe;
-
+        $this->sexe = $sexe ?? "non spécifié"; // Définir une valeur par défaut si null
         return $this;
     }
-    public function getRoles(): array {
+
+    public function getRoles(): array
+    {
         $roles = ['ROLE_USER']; //default roles
-    
+
         if ($this->getArtist() !== null) {
             $roles[] = 'ROLE_ARTISTE';
         }
-    
+
         return $roles;
     }
-    
-    public function eraseCredentials(): void{
 
+    public function eraseCredentials(): void
+    {
     }
 
-    public function getUserIdentifier(): string{
+    public function getUserIdentifier(): string
+    {
         return "";
     }
 
@@ -234,16 +220,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function serializer()
     {
         return [
-        "id" => $this->getId(),
-        "idUser" => $this->getIdUser(),
-        "name" => $this->getName(),
-        "firstName" => $this->getFirstName(),
-        "lastName" => $this->getLastName(),
-        "email" => $this->getEmail(),
-        "tel" => $this->getTel(),
-        "dateBirth" => $this->getDateBirth()->format('d/m/Y'),
-        "createAt" => $this->getCreateAt()->format('d/m/Y'), 
-        "artist" => $this->getArtist() ?  $this->getArtist()->serializer() : [],
-         ];
+            "id" => $this->getId(),
+            "idUser" => $this->getIdUser(),
+            "firstName" => $this->getFirstName(),
+            "lastName" => $this->getLastName(),
+            "email" => $this->getEmail(),
+            "tel" => $this->getTel(),
+            "dateBirth" => $this->getDateBirth()->format('d-m-Y'),
+            "createAt" => $this->getCreateAt()->format('d-m-Y'),
+            "artist" => $this->getArtist() ?  $this->getArtist()->serializer() : [],
+        ];
     }
 }

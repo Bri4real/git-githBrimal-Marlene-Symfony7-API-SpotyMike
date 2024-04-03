@@ -30,7 +30,6 @@ class UserController extends AbstractController
     {
 
         $user = new User();
-        $user->setName("Mike");
         $user->setEmail("Mike");
         $user->setIdUser("Mike");
         $user->setCreateAt(new DateTimeImmutable());

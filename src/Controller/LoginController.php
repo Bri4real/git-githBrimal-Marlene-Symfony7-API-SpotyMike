@@ -8,25 +8,27 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Psr\Cache\CacheItemPoolInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Psr\Cache\CacheItemPoolInterface;
-
-
 
 class LoginController extends AbstractController
 {
     private $entityManager;
+    private $passwordHasher;
     private $cache;
+    private $JWTManager;
 
-    public function __construct(EntityManagerInterface $entityManager, CacheItemPoolInterface $cache)
+    public function __construct(EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher, CacheItemPoolInterface $cache, JWTTokenManagerInterface $JWTManager)
     {
         $this->entityManager = $entityManager;
+        $this->passwordHasher = $passwordHasher;
         $this->cache = $cache;
+        $this->JWTManager = $JWTManager;
     }
 
     #[Route('/login', name: 'app_login', methods: ['POST'])]
-    public function login(Request $request, UserPasswordHasherInterface $passwordEncoder, JWTTokenManagerInterface $JWTManager): JsonResponse
+    public function login(Request $request): JsonResponse
     {
         $email = $request->request->get('email');
         $password = $request->request->get('password');
@@ -45,12 +47,28 @@ class LoginController extends AbstractController
         }
 
         // Vérification du mot de passe
-        if (!$passwordEncoder->isPasswordValid($user, $password)) {
+        if (!$this->passwordHasher->isPasswordValid($user, $password)) {
+            return $this->handleLoginFailure($email);
+        }
+        // Vérification du mot de passe haché
+        if (!$this->passwordHasher->isPasswordValid($user, $password)) {
+            // Générer un hash pour le mot de passe fourni
+            $providedPasswordHash = $this->passwordHasher->hashPassword($user, $password);
+
+            // Comparer le hash fourni avec le hash stocké
+            if (!$this->passwordHasher->isPasswordValid($user, $providedPasswordHash)) {
+                return new JsonResponse([
+                    'error' => true,
+                    'message' => 'Mot de passe incorrect'
+                ], 400);
+            }
+            // Sinon, retourner l'erreur de connexion par défaut
             return $this->handleLoginFailure($email);
         }
 
+
         // Génération du token JWT
-        $token = $JWTManager->create($user);
+        $token = $this->JWTManager->create($user);
 
         // Construction de la réponse avec les données utilisateur et le token JWT
         return new JsonResponse([
@@ -69,6 +87,7 @@ class LoginController extends AbstractController
             'token' => $token,
         ]);
     }
+
     private function handleLoginFailure(string $email): JsonResponse
     {
         // Vérification du nombre de tentatives sur cet email
