@@ -9,9 +9,14 @@ return [
     'artist_create' => [[], ['_controller' => 'App\\Controller\\ArtistController::create'], [], [['text', '/albums']], [], [], []],
     'artist_update' => [[], ['_controller' => 'App\\Controller\\ArtistController::update'], [], [['text', '/albums']], [], [], []],
     'artist_delete' => [[], ['_controller' => 'App\\Controller\\ArtistController::delete'], [], [['text', '/albums']], [], [], []],
+<<<<<<< HEAD
     'app_login' => [[], ['_controller' => 'App\\Controller\\LoginController::index'], [], [['text', '/login']], [], [], []],
     'app_login_post' => [[], ['_controller' => 'App\\Controller\\LoginController::login'], [], [['text', '/login']], [], [], []],
     'app_signup' => [[], ['_controller' => 'App\\Controller\\SignupController::signUp'], [], [['text', '/signup']], [], [], []],
+=======
+    'app_login' => [[], ['_controller' => 'App\\Controller\\LoginController::login'], [], [['text', '/login']], [], [], []],
+    'app_register' => [[], ['_controller' => 'App\\Controller\\RegistrationController::register'], [], [['text', '/register']], [], [], []],
+>>>>>>> 83da67b534bf387b12d5adebe5ccf17ba866f8d0
     'create_song' => [[], ['_controller' => 'App\\Controller\\SongController::create'], [], [['text', '/songs']], [], [], []],
     'get_song' => [['id'], ['_controller' => 'App\\Controller\\SongController::get'], [], [['variable', '/', '[^/]++', 'id', true], ['text', '/songs']], [], [], []],
     'get_songs' => [[], ['_controller' => 'App\\Controller\\SongController::getAll'], [], [['text', '/songs']], [], [], []],
@@ -22,14 +27,23 @@ return [
     'user_delete' => [[], ['_controller' => 'App\\Controller\\UserController::delete'], [], [['text', '/user']], [], [], []],
     'user_get' => [[], ['_controller' => 'App\\Controller\\UserController::read'], [], [['text', '/user']], [], [], []],
     'user_get_all' => [[], ['_controller' => 'App\\Controller\\UserController::readAll'], [], [['text', '/user/all']], [], [], []],
+<<<<<<< HEAD
+=======
+    'api_login_check' => [[], [], [], [['text', '/api/login_check']], [], [], []],
+>>>>>>> 83da67b534bf387b12d5adebe5ccf17ba866f8d0
     'App\Controller\AlbumController::index' => [[], ['_controller' => 'App\\Controller\\AlbumController::index'], [], [['text', '/albums']], [], [], []],
     'App\Controller\ArtistController::index' => [[], ['_controller' => 'App\\Controller\\ArtistController::show'], [], [['text', '/albums']], [], [], []],
     'App\Controller\ArtistController::create' => [[], ['_controller' => 'App\\Controller\\ArtistController::create'], [], [['text', '/albums']], [], [], []],
     'App\Controller\ArtistController::update' => [[], ['_controller' => 'App\\Controller\\ArtistController::update'], [], [['text', '/albums']], [], [], []],
     'App\Controller\ArtistController::delete' => [[], ['_controller' => 'App\\Controller\\ArtistController::delete'], [], [['text', '/albums']], [], [], []],
+<<<<<<< HEAD
     'App\Controller\LoginController::index' => [[], ['_controller' => 'App\\Controller\\LoginController::index'], [], [['text', '/login']], [], [], []],
     'App\Controller\LoginController::login' => [[], ['_controller' => 'App\\Controller\\LoginController::login'], [], [['text', '/login']], [], [], []],
     'App\Controller\SignupController::signUp' => [[], ['_controller' => 'App\\Controller\\SignupController::signUp'], [], [['text', '/signup']], [], [], []],
+=======
+    'App\Controller\LoginController::login' => [[], ['_controller' => 'App\\Controller\\LoginController::login'], [], [['text', '/login']], [], [], []],
+    'App\Controller\RegistrationController::register' => [[], ['_controller' => 'App\\Controller\\RegistrationController::register'], [], [['text', '/register']], [], [], []],
+>>>>>>> 83da67b534bf387b12d5adebe5ccf17ba866f8d0
     'App\Controller\SongController::create' => [[], ['_controller' => 'App\\Controller\\SongController::create'], [], [['text', '/songs']], [], [], []],
     'App\Controller\SongController::get' => [['id'], ['_controller' => 'App\\Controller\\SongController::get'], [], [['variable', '/', '[^/]++', 'id', true], ['text', '/songs']], [], [], []],
     'App\Controller\SongController::getAll' => [[], ['_controller' => 'App\\Controller\\SongController::getAll'], [], [['text', '/songs']], [], [], []],

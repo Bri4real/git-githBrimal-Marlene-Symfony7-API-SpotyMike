@@ -5,10 +5,12 @@ namespace App\Entity;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -17,25 +19,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     // #[ORM\Id]
-    #[ORM\Column(length: 90, unique:true)]
+    #[ORM\Column(length: 80, unique: true, nullable: true)]
     private ?string $idUser = null;
 
-    #[ORM\Column(length: 55)]
-    private ?string $name = null;
 
-    #[ORM\Column(length: 80, unique:true)]
-    private ?string $email = null;
+    #[ORM\Column(length: 55)]
+    private ?string $firstname  = null;
+
+    #[ORM\Column(length: 55)]
+    private ?string $lastname  = null;
+
+    #[ORM\Column(length: 80, unique: true)]
+    private ?string $email  = null;
 
     #[ORM\Column(length: 90)]
-    private ?string $encrypte = null;
+    private ?string $encrypte  = null;
 
     #[ORM\Column(length: 15, nullable: true)]
-    private ?string $tel = null;
+    private ?string $tel  = null;
+
+
+    #[ORM\Column(type: 'date')]
+    private ?\DateTimeInterface $dateBirth  = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $sexe  = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createAt = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updateAt = null;
 
     #[ORM\OneToOne(mappedBy: 'User_idUser', cascade: ['persist', 'remove'])]
@@ -58,15 +71,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getName(): ?string
+
+
+
+    public function getFirstname(): string
     {
-        return $this->name;
+        return $this->firstname;
     }
 
-    public function setName(string $name): static
+    public function setFirstname(string $firstname): self
     {
-        $this->name = $name;
+        $this->firstname = $firstname;
+        return $this;
+    }
 
+    public function getLastname(): string
+    {
+        return $this->lastname;
+    }
+
+    public function setLastname(string $lastname): self
+    {
+        $this->lastname = $lastname;
         return $this;
     }
 
@@ -106,12 +132,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getCreateAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createAt;
     }
 
-    public function setCreateAt(\DateTimeImmutable $createAt): static
+    public function setCreatedAt(\DateTimeImmutable $createAt): static
     {
         $this->createAt = $createAt;
 
@@ -129,6 +155,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+    public function getDateBirth(): \DateTimeInterface
+    {
+        return $this->dateBirth;
+    }
+
+    public function setDateBirth(\DateTimeInterface $dateBirth): self
+    {
+        $this->dateBirth = $dateBirth;
+        return $this;
+    }
+
+
 
     public function getArtist(): ?Artist
     {
@@ -147,28 +185,49 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getRoles(): array{
-
-        return [];
+    public function getSexe(): ?string
+    {
+        return $this->sexe;
     }
 
-    public function eraseCredentials(): void{
-
+    public function setSexe(?string $sexe): self
+    {
+        $this->sexe = $sexe ?? "non spécifié"; // Définir une valeur par défaut si null
+        return $this;
     }
 
-    public function getUserIdentifier(): string{
+    public function getRoles(): array
+    {
+        $roles = ['ROLE_USER']; //default roles
+
+        if ($this->getArtist() !== null) {
+            $roles[] = 'ROLE_ARTISTE';
+        }
+
+        return $roles;
+    }
+
+    public function eraseCredentials(): void
+    {
+    }
+
+    public function getUserIdentifier(): string
+    {
         return "";
     }
+
 
     public function serializer()
     {
         return [
             "id" => $this->getId(),
             "idUser" => $this->getIdUser(),
-            "name" => $this->getName(),
+            "firstName" => $this->getFirstName(),
+            "lastName" => $this->getLastName(),
             "email" => $this->getEmail(),
             "tel" => $this->getTel(),
-            "createAt" => $this->getCreateAt(),
+            "dateBirth" => $this->getDateBirth()->format('d-m-Y'),
+            "createAt" => $this->getCreateAt()->format('d-m-Y'),
             "artist" => $this->getArtist() ?  $this->getArtist()->serializer() : [],
         ];
     }
