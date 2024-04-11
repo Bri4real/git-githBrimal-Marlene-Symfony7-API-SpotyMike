@@ -77,7 +77,26 @@ class UserController extends AbstractController
             'path' => 'src/Controller/UserController.php',
         ]);
     }
+    #[Route('/user/all', name: 'user_get_all', methods: 'DELETE')]
+    public function deleteAll($id): JsonResponse
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+        $user = $entityManager->getRepository(User::class)->find($id);
 
+        if (!$user) {
+            return new JsonResponse(['message' => 'Compte introuvable'],
+            200);
+        }
+
+        // Supprimer le compte utilisateur
+        $entityManager->remove($user);
+        $entityManager->flush();
+
+        return new JsonResponse(['message' => 'Compte supprimé'],
+        401);
+    }
+
+    
     #[Route('/user', name: 'user_get', methods: 'GET')]
     public function read(): JsonResponse
     {

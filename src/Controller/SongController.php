@@ -67,8 +67,7 @@ class SongController extends AbstractController
         $song->setUrl($requestData['url']);
         $song->setCover($requestData['cover']);
         $song->setVisibility($requestData['visibility']);
-        // Mettre à jour d'autres attributs si nécessaire
-
+       
         $entityManager->flush();
 
         return $this->json(['message' => 'Song updated successfully']);
