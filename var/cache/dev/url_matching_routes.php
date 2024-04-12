@@ -10,22 +10,19 @@ return [
     [ // $staticRoutes
         '/albums' => [
             [['_route' => 'album_index', '_controller' => 'App\\Controller\\AlbumController::index'], null, ['GET' => 0], null, false, false, null],
+            [['_route' => 'album_show', '_controller' => 'App\\Controller\\AlbumController::show'], null, ['GET' => 0], null, false, false, null],
+            [['_route' => 'album_update', '_controller' => 'App\\Controller\\AlbumController::update'], null, ['PUT' => 0], null, false, false, null],
+        ],
+        '/artist' => [
             [['_route' => 'artist_index', '_controller' => 'App\\Controller\\ArtistController::show'], null, ['GET' => 0], null, false, false, null],
             [['_route' => 'artist_create', '_controller' => 'App\\Controller\\ArtistController::create'], null, ['POST' => 0], null, false, false, null],
             [['_route' => 'artist_update', '_controller' => 'App\\Controller\\ArtistController::update'], null, ['PUT' => 0], null, false, false, null],
             [['_route' => 'artist_delete', '_controller' => 'App\\Controller\\ArtistController::delete'], null, ['DELETE' => 0], null, false, false, null],
-<<<<<<< HEAD
         ],
-        '/login' => [
-            [['_route' => 'app_login', '_controller' => 'App\\Controller\\LoginController::index'], null, ['GET' => 0], null, false, false, null],
-            [['_route' => 'app_login_post', '_controller' => 'App\\Controller\\LoginController::login'], null, ['POST' => 0, 'PUT' => 1], null, false, false, null],
-        ],
-        '/signup' => [[['_route' => 'app_signup', '_controller' => 'App\\Controller\\SignupController::signUp'], null, ['POST' => 0], null, false, false, null]],
-=======
-        ],
+        '/' => [[['_route' => 'index', '_controller' => 'App\\Controller\\IndexController::index'], null, null, null, false, false, null]],
+        '/donnees' => [[['_route' => 'donnees', '_controller' => 'App\\Controller\\IndexController::donnees'], null, null, null, false, false, null]],
         '/login' => [[['_route' => 'app_login', '_controller' => 'App\\Controller\\LoginController::login'], null, ['POST' => 0], null, false, false, null]],
         '/register' => [[['_route' => 'app_register', '_controller' => 'App\\Controller\\RegistrationController::register'], null, ['POST' => 0], null, false, false, null]],
->>>>>>> 83da67b534bf387b12d5adebe5ccf17ba866f8d0
         '/songs' => [
             [['_route' => 'create_song', '_controller' => 'App\\Controller\\SongController::create'], null, ['POST' => 0], null, false, false, null],
             [['_route' => 'get_songs', '_controller' => 'App\\Controller\\SongController::getAll'], null, ['GET' => 0], null, false, false, null],
@@ -37,10 +34,7 @@ return [
             [['_route' => 'user_get', '_controller' => 'App\\Controller\\UserController::read'], null, ['GET' => 0], null, false, false, null],
         ],
         '/user/all' => [[['_route' => 'user_get_all', '_controller' => 'App\\Controller\\UserController::readAll'], null, ['GET' => 0], null, false, false, null]],
-<<<<<<< HEAD
-=======
         '/api/login_check' => [[['_route' => 'api_login_check'], null, null, null, false, false, null]],
->>>>>>> 83da67b534bf387b12d5adebe5ccf17ba866f8d0
     ],
     [ // $regexpList
         0 => '{^(?'

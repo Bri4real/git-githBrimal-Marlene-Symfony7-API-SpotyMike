@@ -129,6 +129,13 @@ class Artist
         return $this->albums;
     }
 
+    public function setAlbums(string $albums): static
+    {
+        $this->albums = $albums;
+
+        return $this;
+    }
+    
     public function addAlbum(Album $album): static
     {
         if (!$this->albums->contains($album)) {
@@ -155,11 +162,11 @@ class Artist
     {
         return [
             "id" => $this->getId(),
-            "idUser" => ($children) ? $this->getUserIdUser() : null,
             "fullname" => $this->getFullname(),
             "label" => $this->getLabel(),
             "description" => $this->getDescription(),
-            "songs" => $this->getSongs()
+            "album" => $this->getAlbums()
+    
         ];
     }
 }

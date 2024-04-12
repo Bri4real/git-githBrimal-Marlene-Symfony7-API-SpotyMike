@@ -5,12 +5,11 @@ namespace App\Entity;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
+
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -19,36 +18,89 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     // #[ORM\Id]
-    #[ORM\Column(length: 80, unique: true, nullable: true)]
+    #[ORM\Column(length: 90, unique: true)]
     private ?string $idUser = null;
 
+    #[ORM\Column(length: 55)]
+    private ?string $firstname = null;
+
 
     #[ORM\Column(length: 55)]
-    private ?string $firstname  = null;
-
-    #[ORM\Column(length: 55)]
-    private ?string $lastname  = null;
+    private ?string $lastname = null;
 
     #[ORM\Column(length: 80, unique: true)]
-    private ?string $email  = null;
+    private ?string $email = null;
 
     #[ORM\Column(length: 90)]
-    private ?string $encrypte  = null;
+    private ?string $encrypte = null;
 
     #[ORM\Column(length: 15, nullable: true)]
-    private ?string $tel  = null;
+    private ?string $tel = null;
+
+    #[ORM\Column(type: "datetime", nullable: true)]
+    private ?\DateTimeInterface $dateBirth = null;
+
+    #[ORM\Column(type: "integer", nullable: true)]
+    private ?int $sexe = null;
+
+    #[ORM\Column(type: 'json')]
+    private array $roles = [];
+
+    #[ORM\Column(type: "boolean", nullable: true)]
+    private ?bool $isActive = true;
 
 
-    #[ORM\Column(type: 'date')]
-    private ?\DateTimeInterface $dateBirth  = null;
+    public function setIsActive(bool $isActive): self
+    {
+        $this->isActive = $isActive;
+        return $this;
+    }
 
-    #[ORM\Column(length: 20, nullable: true)]
-    private ?string $sexe  = null;
+    // Getter pour isActive
+    public function isActive(): bool
+    {
+        return $this->isActive;
+    }
+
+
+    // Getters et setters pour dateBirth
+    public function getDateBirth(): ?\DateTimeInterface
+    {
+        return $this->dateBirth;
+    }
+
+    public function setDateBirth(?\DateTimeInterface $dateBirth): static
+    {
+        $this->dateBirth = $dateBirth;
+
+        return $this;
+    }
+
+    // Getters et setters pour sexe
+    public function getSexe(): ?int
+    {
+        return $this->sexe;
+    }
+
+    public function setSexe(?int $sexe): self
+    {
+        $this->sexe = $sexe;
+
+        return $this;
+    }
+
+
+    public function setRoles(array $roles): self
+    {
+        $this->roles = $roles;
+
+        return $this;
+    }
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createAt = null;
+    private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updateAt = null;
 
     #[ORM\OneToOne(mappedBy: 'User_idUser', cascade: ['persist', 'remove'])]
@@ -71,29 +123,32 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-
-
-
-    public function getFirstname(): string
-    {
-        return $this->firstname;
-    }
-
-    public function setFirstname(string $firstname): self
-    {
-        $this->firstname = $firstname;
-        return $this;
-    }
-
-    public function getLastname(): string
+    public function getLastName(): ?string
     {
         return $this->lastname;
     }
 
-    public function setLastname(string $lastname): self
+    public function setlastName(string $lastname): static
     {
         $this->lastname = $lastname;
+
         return $this;
+    }
+    public function getFirstName(): ?string
+    {
+        return $this->firstname;
+    }
+
+    public function setFirstName(string $firstname): static
+    {
+        $this->firstname = $firstname;
+
+        return $this;
+    }
+
+    public function getUsername(): ?string
+    {
+        return $this->email;
     }
 
     public function getEmail(): ?string
@@ -134,12 +189,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getCreatedAt(): ?\DateTimeImmutable
     {
-        return $this->createAt;
+        return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createAt): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
-        $this->createAt = $createAt;
+        $this->createdAt = $createdAt;
 
         return $this;
     }
@@ -155,24 +210,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
-    public function getDateBirth(): \DateTimeInterface
-    {
-        return $this->dateBirth;
-    }
-
-    public function setDateBirth(\DateTimeInterface $dateBirth): self
-    {
-        $this->dateBirth = $dateBirth;
-        return $this;
-    }
-
-
 
     public function getArtist(): ?Artist
     {
         return $this->artist;
     }
 
+    public function getFormattedSexe(): ?string
+    {
+        $sexe = $this->getSexe();
+
+        if ($sexe === 0) {
+            return "Femme";
+        } elseif ($sexe === 1) {
+            return "Homme";
+        } else {
+            return null;
+        }
+    }
     public function setArtist(Artist $artist): static
     {
         // set the owning side of the relation if necessary
@@ -185,26 +240,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getSexe(): ?string
-    {
-        return $this->sexe;
-    }
 
-    public function setSexe(?string $sexe): self
-    {
-        $this->sexe = $sexe ?? "non spécifié"; // Définir une valeur par défaut si null
-        return $this;
-    }
 
     public function getRoles(): array
     {
-        $roles = ['ROLE_USER']; //default roles
 
-        if ($this->getArtist() !== null) {
-            $roles[] = 'ROLE_ARTISTE';
-        }
-
-        return $roles;
+        return ['PUBLIC_ACCESS'];
     }
 
     public function eraseCredentials(): void
@@ -213,21 +254,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getUserIdentifier(): string
     {
-        return "";
+        return $this->getEmail();
     }
-
 
     public function serializer()
     {
         return [
             "id" => $this->getId(),
             "idUser" => $this->getIdUser(),
-            "firstName" => $this->getFirstName(),
-            "lastName" => $this->getLastName(),
+            "firstname" => $this->getFirstName(),
+            "lastname" => $this->getLastName(),
             "email" => $this->getEmail(),
             "tel" => $this->getTel(),
-            "dateBirth" => $this->getDateBirth()->format('d-m-Y'),
-            "createAt" => $this->getCreateAt()->format('d-m-Y'),
+            "sexe" => $this->getSexe() === "0" ? "Femme" : ($this->getSexe() === "1" ? "Homme" : null),
+
+            "createAt" => $this->getCreatedAt(),
             "artist" => $this->getArtist() ?  $this->getArtist()->serializer() : [],
         ];
     }

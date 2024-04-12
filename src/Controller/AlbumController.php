@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controller;
 
 use App\Entity\Album;
@@ -13,21 +14,22 @@ class AlbumController extends AbstractController
 {
     private $repository;
     private $entityManager;
-    public function __construct(EntityManagerInterface $entityManager){
+    public function __construct(EntityManagerInterface $entityManager)
+    {
         $this->entityManager = $entityManager;
         $this->repository = $entityManager->getRepository(Album::class);
     }
-    
+
     #[Route('/albums', name: 'album_index', methods: 'GET')]
     public function index(): JsonResponse
     {
         // Récupère tous les albums depuis la base de données
-        $albums =$this->repository->findAll();
+        $albums = $this->repository->findAll();
 
         return $this->json($albums);
     }
 
-   
+
 
     #[Route('/albums', name: 'album_show', methods: 'GET')]
     public function show(Album $album): JsonResponse
@@ -50,7 +52,7 @@ class AlbumController extends AbstractController
         $album->setCateg($data['categ']);
         $album->setYear($data['year']);
 
-      
+        // Obtient le gestionnaire d'entités et persiste l'album dans la base de données
          $this->entityManager->persist($album);
          $this->entityManager->flush();
 
@@ -79,11 +81,13 @@ class AlbumController extends AbstractController
         return $this->json($album);
     }
 
-  
-    #[Route('/albums', name: 'album_delete', methods: 'DELETE')]
+    /**
+     * @Route("/albums/{id}", name="album_delete", methods={"DELETE"})
+     */
     public function delete(Album $album): Response 
     {
-       
+        // Obtient le gestionnaire d'entités et supprime l'album de la base de données
+      
         $this->entityManager->remove($album);
         $this->entityManager->flush();
         

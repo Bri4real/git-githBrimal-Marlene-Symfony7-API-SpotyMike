@@ -31,14 +31,15 @@ class AppFixtures extends Fixture
             $user->setLastname($faker->lastName);
             $user->setEmail($faker->email);
             $user->setDateBirth($faker->dateTimeBetween("-40 years", "-18 years"));
-            $user->setCreateAt(new \DateTimeImmutable());
+            $user->setCreatedAt(new \DateTimeImmutable());
+            $user->setUpdateAt(new \DateTimeImmutable()); // Fixer la faute de frappe sur setUpdatedAt()
 
             // Ajouter sexe (homme ou femme)
             $user->setSexe($faker->randomElement(['Homme', 'Femme']));
 
             // Générer un numéro de téléphone français au format spécifique
             $phoneNumber = '+33 ' . substr($faker->phoneNumber, 1);
-            $user->settel($phoneNumber);
+            $user->setTel($phoneNumber); // Fixer le typo sur setTel()
 
             // Générer un mot de passe aléatoire pour chaque utilisateur
             $password = 'password123'; // Utilisation du même mot de passe pour la démo

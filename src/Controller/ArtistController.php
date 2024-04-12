@@ -6,7 +6,6 @@
 namespace App\Controller;
 
 use App\Entity\Artist;
-use App\Entity\Artiste;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -44,16 +43,17 @@ class ArtistController extends AbstractController
     public function create(Request $request): JsonResponse
     {
        
-        $data = json_decode($request->getContent(), true);
+        //$data = $request->get();
 
         
         $artist = new Artist();
-        $artist->setFullname($data['fullname']);
-        $artist->setLabel($data['label']);
-        $artist->setDescription($data['description']);
+        $artist->setFullname($request->get('fullname'));
+        $artist->setLabel($request->get('label'));
+        $artist->setDescription($request->get('description'));
+        $artist->setAlbums($request->get('album') );
 
         $this->entityManager->persist($artist);
-        $$this->entityManager->flush();
+        $this->entityManager->flush();
 
         
         return $this->json($artist);
@@ -69,9 +69,11 @@ class ArtistController extends AbstractController
         $artist->setFullname($data['fullname'] ?? $artist->getFullname());
         $artist->setLabel($data['label'] ?? $artist->getLabel());
         $artist->setDescription($data['description'] ?? $artist->getDescription());
+        $artist->setAlbums($data['album'] ?? $artist->getAlbums());
+
 
        
-        $this->entityManager->persist($artist);
+        $this->entityManager->persist($artist); 
         $$this->entityManager->flush();
 
         
