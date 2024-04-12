@@ -25,6 +25,15 @@ class UserController extends AbstractController
         $this->repository = $entityManager->getRepository(User::class);
     }
 
+    // Dans la classe User
+
+    public function isActive(User $user): bool
+    {
+        // Vérifie si le compte de l'utilisateur est actif
+        return $user->isActive();
+    }
+
+
     #[Route('/user', name: 'user_post', methods: 'POST')]
     public function create(Request $request, UserPasswordHasherInterface $passwordHash): JsonResponse
     {
@@ -32,7 +41,7 @@ class UserController extends AbstractController
         $user = new User();
         $user->setEmail("Mike");
         $user->setIdUser("Mike");
-        $user->setCreateAt(new DateTimeImmutable());
+        $user->setCreatedAt(new DateTimeImmutable());
         $user->setUpdateAt(new DateTimeImmutable());
         $password = "Mike";
 

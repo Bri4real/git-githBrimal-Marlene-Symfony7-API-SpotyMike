@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Uid\Uuid;
 
 class RegistrationController extends AbstractController
 {
@@ -24,21 +25,33 @@ class RegistrationController extends AbstractController
     #[Route('/register', name: 'app_register', methods: ['POST'])]
     public function register(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
+        // Récupération des données du formulaire encodées
+        $firstname = $request->request->get('firstname');
+        $lastname = $request->request->get('lastname');
+        $email = $request->request->get('email');
+        $password = $request->request->get('password');
+        $dateBirth = $request->request->get('dateBirth');
+        $tel = $request->request->get('tel');
+        $sexe = $request->request->get('sexe');
+        $idUser = Uuid::v1();
+
+
+        // Affichage des données récupérées pour le débogage
+        var_dump(compact('firstname', 'lastname', 'email', 'password', 'dateBirth', 'tel', 'sexe'));
 
         // Vérification des données obligatoires
         $requiredFields = ['firstname', 'lastname', 'email', 'password', 'dateBirth'];
         foreach ($requiredFields as $field) {
-            if (!isset($data[$field])) {
+            if (empty($$field)) {
                 return new JsonResponse([
                     'error' => true,
-                    'message' => 'Une ou plusieurs données obligatoire sont manquantes'
+                    'message' => 'Une ou plusieurs données obligatoires sont manquantes'
                 ], 400);
             }
         }
 
         // Vérification de l'âge
-        $dateBirth = new \DateTime($data['dateBirth']);
+        $dateBirth = new \DateTime($dateBirth);
         $now = new \DateTime();
         $age = $now->diff($dateBirth)->y;
         if ($age < 18) {
@@ -49,7 +62,7 @@ class RegistrationController extends AbstractController
         }
 
         // Vérification si un compte avec cet e-mail existe déjà
-        $existingUser = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $data['email']]);
+        $existingUser = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
         if ($existingUser) {
             return new JsonResponse([
                 'error' => true,
@@ -57,24 +70,31 @@ class RegistrationController extends AbstractController
             ], 409);
         }
 
+        $now = new \DateTimeImmutable();
         // Création de l'utilisateur
         $user = new User();
-        $user->setFirstname($data['firstname']);
-        $user->setLastname($data['lastname']);
-        $user->setEmail($data['email']);
+        $user->setFirstname($firstname);
+        $user->setLastname($lastname);
+        $user->setEmail($email);
         $user->setDateBirth($dateBirth);
-        $user->setCreateAt(new \DateTimeImmutable());
+        $user->setCreatedAt($now);
+        $user->setUpdateAt($now);
+        $user->setIdUser($idUser);
+
+
 
         // Données facultatives
-        if (isset($data['tel'])) {
-            $user->setTel($data['tel']);
+        if ($tel) {
+            $user->setTel($tel);
         }
-        if (isset($data['sexe'])) {
-            $user->setSexe($data['sexe']);
+        if ($sexe !== null) {
+            // Convertir la valeur du sexe en int pour utiliser la méthode setSexe
+            $sexe = (int)$sexe;
+            $user->setSexe($sexe);
         }
 
         // Hashage du mot de passe
-        $hashedPassword = $this->passwordHasher->hashPassword($user, $data['password']);
+        $hashedPassword = $this->passwordHasher->hashPassword($user, $password);
         $user->setPassword($hashedPassword);
 
         // Enregistrement de l'utilisateur
@@ -90,10 +110,10 @@ class RegistrationController extends AbstractController
                 'lastname' => $user->getLastname(),
                 'email' => $user->getEmail(),
                 'tel' => $user->getTel(),
-                'sexe' => $user->getSexe(),
+                'sexe' => $user->getFormattedSexe(),
                 'dateBirth' => $user->getDateBirth()->format('d-m-Y'),
-                'createdAt' => $user->getCreateAt()->format('d-m-Y H:i:s'),
-                'updateAt' => $user->getUpdateAt() ? $user->getUpdateAt()->format('d-m-Y H:i:s') : null,
+                'createdAt' => $user->getCreatedAt()->format('Y-m-d'),
+                'updateAt' => $user->getUpdateAt() ? $user->getUpdateAt()->format('Y-m-d') : null,
             ]
         ], 201);
     }
