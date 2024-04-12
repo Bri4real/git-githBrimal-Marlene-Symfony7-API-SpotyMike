@@ -19,20 +19,29 @@ class UserController extends AbstractController
     private $repository;
     private $entityManager;
 
-    public function __construct(EntityManagerInterface $entityManager){
+    public function __construct(EntityManagerInterface $entityManager)
+    {
         $this->entityManager = $entityManager;
         $this->repository = $entityManager->getRepository(User::class);
     }
+
+    // Dans la classe User
+
+    public function isActive(User $user): bool
+    {
+        // Vérifie si le compte de l'utilisateur est actif
+        return $user->isActive();
+    }
+
 
     #[Route('/user', name: 'user_post', methods: 'POST')]
     public function create(Request $request, UserPasswordHasherInterface $passwordHash): JsonResponse
     {
 
         $user = new User();
-        $user->setName("Mike");
         $user->setEmail("Mike");
         $user->setIdUser("Mike");
-        $user->setCreateAt(new DateTimeImmutable());
+        $user->setCreatedAt(new DateTimeImmutable());
         $user->setUpdateAt(new DateTimeImmutable());
         $password = "Mike";
 
@@ -42,8 +51,8 @@ class UserController extends AbstractController
         $this->entityManager->flush();
 
         return $this->json([
-            'isNotGoodPassword' => ($passwordHash->isPasswordValid($user, 'Zoubida') ),
-            'isGoodPassword' => ($passwordHash->isPasswordValid($user, $password) ),
+            'isNotGoodPassword' => ($passwordHash->isPasswordValid($user, 'Zoubida')),
+            'isGoodPassword' => ($passwordHash->isPasswordValid($user, $password)),
             'user' => $user->serializer(),
             'path' => 'src/Controller/UserController.php',
         ]);
@@ -53,9 +62,9 @@ class UserController extends AbstractController
     public function update(): JsonResponse
     {
         $phone = "0668000000";
-        if(preg_match("/^[0-9]{10}$/", $phone)) {
+        if (preg_match("/^[0-9]{10}$/", $phone)) {
 
-            $user = $this->repository->findOneBy(["id"=>1]);
+            $user = $this->repository->findOneBy(["id" => 1]);
             $old = $user->getTel();
             $user->setTel($phone);
             $this->entityManager->flush();
@@ -70,7 +79,7 @@ class UserController extends AbstractController
     #[Route('/user', name: 'user_delete', methods: 'DELETE')]
     public function delete(): JsonResponse
     {
-        $this->entityManager->remove($this->repository->findOneBy(["id"=>1]));
+        $this->entityManager->remove($this->repository->findOneBy(["id" => 1]));
         $this->entityManager->flush();
         return $this->json([
             'message' => 'Welcome to your new controller!',

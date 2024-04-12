@@ -695,23 +695,12 @@ class FrameworkConfig implements \Symfony\Component\Config\Builder\ConfigBuilder
     }
 
     /**
-     * @template TValue
-     * @param TValue $value
      * serializer configuration
-     * @default {"enabled":false,"enable_attributes":true,"mapping":{"paths":[]},"default_context":[]}
-     * @return \Symfony\Config\Framework\SerializerConfig|$this
-     * @psalm-return (TValue is array ? \Symfony\Config\Framework\SerializerConfig : static)
-     */
-    public function serializer(array $value = []): \Symfony\Config\Framework\SerializerConfig|static
+     * @default {"enabled":true,"enable_attributes":true,"mapping":{"paths":[]},"default_context":[]}
+    */
+    public function serializer(array $value = []): \Symfony\Config\Framework\SerializerConfig
     {
-        if (!\is_array($value)) {
-            $this->_usedProperties['serializer'] = true;
-            $this->serializer = $value;
-
-            return $this;
-        }
-
-        if (!$this->serializer instanceof \Symfony\Config\Framework\SerializerConfig) {
+        if (null === $this->serializer) {
             $this->_usedProperties['serializer'] = true;
             $this->serializer = new \Symfony\Config\Framework\SerializerConfig($value);
         } elseif (0 < \func_num_args()) {
@@ -1073,23 +1062,12 @@ class FrameworkConfig implements \Symfony\Component\Config\Builder\ConfigBuilder
     }
 
     /**
-     * @template TValue
-     * @param TValue $value
      * Uid configuration
-     * @default {"enabled":false,"default_uuid_version":7,"name_based_uuid_version":5,"time_based_uuid_version":7}
-     * @return \Symfony\Config\Framework\UidConfig|$this
-     * @psalm-return (TValue is array ? \Symfony\Config\Framework\UidConfig : static)
-     */
-    public function uid(array $value = []): \Symfony\Config\Framework\UidConfig|static
+     * @default {"enabled":true,"default_uuid_version":7,"name_based_uuid_version":5,"time_based_uuid_version":7}
+    */
+    public function uid(array $value = []): \Symfony\Config\Framework\UidConfig
     {
-        if (!\is_array($value)) {
-            $this->_usedProperties['uid'] = true;
-            $this->uid = $value;
-
-            return $this;
-        }
-
-        if (!$this->uid instanceof \Symfony\Config\Framework\UidConfig) {
+        if (null === $this->uid) {
             $this->_usedProperties['uid'] = true;
             $this->uid = new \Symfony\Config\Framework\UidConfig($value);
         } elseif (0 < \func_num_args()) {
@@ -1369,7 +1347,7 @@ class FrameworkConfig implements \Symfony\Component\Config\Builder\ConfigBuilder
 
         if (array_key_exists('serializer', $value)) {
             $this->_usedProperties['serializer'] = true;
-            $this->serializer = \is_array($value['serializer']) ? new \Symfony\Config\Framework\SerializerConfig($value['serializer']) : $value['serializer'];
+            $this->serializer = new \Symfony\Config\Framework\SerializerConfig($value['serializer']);
             unset($value['serializer']);
         }
 
@@ -1471,7 +1449,7 @@ class FrameworkConfig implements \Symfony\Component\Config\Builder\ConfigBuilder
 
         if (array_key_exists('uid', $value)) {
             $this->_usedProperties['uid'] = true;
-            $this->uid = \is_array($value['uid']) ? new \Symfony\Config\Framework\UidConfig($value['uid']) : $value['uid'];
+            $this->uid = new \Symfony\Config\Framework\UidConfig($value['uid']);
             unset($value['uid']);
         }
 
@@ -1592,7 +1570,7 @@ class FrameworkConfig implements \Symfony\Component\Config\Builder\ConfigBuilder
             $output['annotations'] = $this->annotations instanceof \Symfony\Config\Framework\AnnotationsConfig ? $this->annotations->toArray() : $this->annotations;
         }
         if (isset($this->_usedProperties['serializer'])) {
-            $output['serializer'] = $this->serializer instanceof \Symfony\Config\Framework\SerializerConfig ? $this->serializer->toArray() : $this->serializer;
+            $output['serializer'] = $this->serializer->toArray();
         }
         if (isset($this->_usedProperties['propertyAccess'])) {
             $output['property_access'] = $this->propertyAccess->toArray();
@@ -1643,7 +1621,7 @@ class FrameworkConfig implements \Symfony\Component\Config\Builder\ConfigBuilder
             $output['rate_limiter'] = $this->rateLimiter instanceof \Symfony\Config\Framework\RateLimiterConfig ? $this->rateLimiter->toArray() : $this->rateLimiter;
         }
         if (isset($this->_usedProperties['uid'])) {
-            $output['uid'] = $this->uid instanceof \Symfony\Config\Framework\UidConfig ? $this->uid->toArray() : $this->uid;
+            $output['uid'] = $this->uid->toArray();
         }
         if (isset($this->_usedProperties['htmlSanitizer'])) {
             $output['html_sanitizer'] = $this->htmlSanitizer instanceof \Symfony\Config\Framework\HtmlSanitizerConfig ? $this->htmlSanitizer->toArray() : $this->htmlSanitizer;
