@@ -123,23 +123,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getLastName(): ?string
+    public function getLastname(): ?string
     {
         return $this->lastname;
     }
 
-    public function setlastName(string $lastname): static
+    public function setLastname(string $lastname): static
     {
         $this->lastname = $lastname;
 
         return $this;
     }
-    public function getFirstName(): ?string
+    public function getFirstname(): ?string
     {
         return $this->firstname;
     }
 
-    public function setFirstName(string $firstname): static
+    public function setFirstname(string $firstname): static
     {
         $this->firstname = $firstname;
 
@@ -267,7 +267,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             "email" => $this->getEmail(),
             "tel" => $this->getTel(),
             "sexe" => $this->getSexe() === "0" ? "Femme" : ($this->getSexe() === "1" ? "Homme" : null),
-
             "createAt" => $this->getCreatedAt(),
             "artist" => $this->getArtist() ?  $this->getArtist()->serializer() : [],
         ];
