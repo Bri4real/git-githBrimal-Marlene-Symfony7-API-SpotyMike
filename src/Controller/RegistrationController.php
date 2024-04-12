@@ -37,7 +37,7 @@ class RegistrationController extends AbstractController
 
 
         // Affichage des données récupérées pour le débogage
-        var_dump(compact('firstname', 'lastname', 'email', 'password', 'dateBirth', 'tel', 'sexe'));
+        //    var_dump(compact('firstname', 'lastname', 'email', 'password', 'dateBirth', 'tel', 'sexe'));
 
         // Vérification des données obligatoires
         $requiredFields = ['firstname', 'lastname', 'email', 'password', 'dateBirth'];
