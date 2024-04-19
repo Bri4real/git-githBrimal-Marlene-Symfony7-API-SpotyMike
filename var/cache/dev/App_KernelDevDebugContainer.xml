@@ -268,6 +268,11 @@
         <argument type="service" id=".service_locator.jUv.zyj.App\Controller\SongController"/>
       </call>
     </service>
+    <service id="App\Controller\TokenVerifierService" class="App\Controller\TokenVerifierService" autowire="true" autoconfigure="true">
+      <argument type="service" id="lexik_jwt_authentication.jwt_manager"/>
+      <argument type="service" id="lexik_jwt_authentication.jws_provider.lcobucci"/>
+      <argument type="service" id="App\Repository\UserRepository"/>
+    </service>
     <service id="App\Controller\UserController" class="App\Controller\UserController" public="true" autowire="true" autoconfigure="true">
       <tag name="controller.service_arguments"/>
       <tag name="container.service_subscriber"/>
@@ -3688,10 +3693,10 @@
       <argument type="service" id="security.authentication.success_handler.login.json_login"/>
       <argument type="service" id="security.authentication.failure_handler.login.json_login"/>
       <argument type="collection">
+        <argument key="username_path">email</argument>
         <argument key="check_path">/login</argument>
         <argument key="use_forward">false</argument>
         <argument key="login_path">/login</argument>
-        <argument key="username_path">username</argument>
         <argument key="password_path">password</argument>
       </argument>
       <argument type="service" id="property_accessor" on-invalid="null"/>

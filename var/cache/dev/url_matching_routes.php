@@ -28,7 +28,7 @@ return [
             [['_route' => 'user_get', '_controller' => 'App\\Controller\\UserController::read'], null, ['GET' => 0], null, false, false, null],
         ],
         '/user/all' => [[['_route' => 'user_get_all', '_controller' => 'App\\Controller\\UserController::readAll'], null, ['GET' => 0], null, false, false, null]],
-        '/api/login_check' => [[['_route' => 'api_login_check'], null, null, null, false, false, null]],
+        '/login_check' => [[['_route' => 'api_login_check'], null, null, null, false, false, null]],
     ],
     [ // $regexpList
         0 => '{^(?'
