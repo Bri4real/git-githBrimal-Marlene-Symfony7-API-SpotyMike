@@ -1,7 +1,7 @@
 <?php
 
 namespace App\DataFixtures;
-
+use App\Entity\Artist;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
@@ -10,7 +10,7 @@ use Faker\Provider\PhoneNumber;
 
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-class AppFixtures extends Fixture
+class UsersFixtures extends Fixture
 {
     private $passwordHasher;
 
@@ -35,7 +35,7 @@ class AppFixtures extends Fixture
             $user->setUpdateAt(new \DateTimeImmutable()); // Fixer la faute de frappe sur setUpdatedAt()
 
             // Ajouter sexe (homme ou femme)
-            $user->setSexe($faker->randomElement(['Homme', 'Femme']));
+            $user->setSexe($faker->randomElement(['0', '1']));
 
             // Générer un numéro de téléphone français au format spécifique
             $phoneNumber = '+33 ' . substr($faker->phoneNumber, 1);

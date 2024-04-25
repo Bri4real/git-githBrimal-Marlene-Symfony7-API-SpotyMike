@@ -6,96 +6,97 @@ use App\Entity\Album;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class AlbumController extends AbstractController
 {
-    private $repository;
     private $entityManager;
+
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
-        $this->repository = $entityManager->getRepository(Album::class);
     }
 
-    #[Route('/albums', name: 'album_index', methods: 'GET')]
-    public function index(): JsonResponse
+    #[Route('/albums', name: 'create_album', methods: ['POST'])]
+    public function create(Request $request): Response
     {
-        // Récupère tous les albums depuis la base de données
-        $albums = $this->repository->findAll();
+        $requestData = json_decode($request->getContent(), true);
 
-        // Retourne les albums sous forme de JSON
+      
+       
+
+        $album = new Album();
+        $nom = $request->request->get('nom');
+        $cover = $request->request->get('cover');
+        $categ = $request->request->get('categ');
+        $year = $request->request->get('year');
+
+        $this->entityManager->persist($album);
+        $this->entityManager->flush();
+
+        return $this->json(['message' => 'Album created successfully'], Response::HTTP_CREATED);
+    }
+
+    #[Route('/album/{id}', name: 'get_album', methods: ['GET'])]
+    public function get(int $id): Response
+    {
+        $album = $this->entityManager->getRepository(Album::class)->find($id);
+
+        if (!$album) {
+            return $this->json(['error' => 'Album not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->json($album);
+    }
+
+    #[Route('/albums', name: 'get_albums', methods: ['GET'])]
+    public function getAll(): Response
+    {
+        $albums = $this->entityManager->getRepository(Album::class)->findAll();
+
         return $this->json($albums);
     }
 
-
-
-    /**
-     * @Route("/albums/{id}", name="album_show", methods={"GET"})
-     */
-    public function show(Album $album): JsonResponse
+    #[Route('/albums/{id}', name: 'update_album', methods: ['PUT'])]
+    public function update(Request $request, int $id): Response
     {
-        // Retourne les détails d'un album spécifique sous forme de JSON
-        return $this->json($album);
-    }
+        $album = $this->entityManager->getRepository(Album::class)->find($id);
 
-    /**
-     * @Route("/albums", name="album_create", methods={"POST"})
-     */
-    public function create(Request $request): JsonResponse
-    {
-        // Récupère les données JSON envoyées dans la requête
-        $data = json_decode($request->getContent(), true);
+        if (!$album) {
+            return $this->json(['error' => 'Album not found'], Response::HTTP_NOT_FOUND);
+        }
 
-        // Crée une nouvelle instance de l'entité Album avec les données fournies
+        $requestData = json_decode($request->getContent(), true);
+
         $album = new Album();
-        $album->setNom($data['nom']);
-        $album->setCover($data['cover']);
-        $album->setCateg($data['categ']);
-        $album->setYear($data['year']);
+        $album->setNom($requestData['nom']);
+        $album->setCover($requestData['cover']);
+        $album->setCateg($requestData['categ']);
+        $album->setYear($requestData['year']);
 
-        // Obtient le gestionnaire d'entités et persiste l'album dans la base de données
-        $this->entityManager->persist($album);
+
+        
+
+        // Mettre à jour d'autres attributs si nécessaire
+
         $this->entityManager->flush();
 
-        // Retourne les données de l'album créé sous forme de JSON
-        return $this->json($album);
+        return $this->json(['message' => 'Album updated successfully']);
     }
 
-    /**
-     * @Route("/albums/{id}", name="album_update", methods={"PUT"})
-     */
-    public function update(Request $request, Album $album): JsonResponse
+    #[Route('/albums/{id}', name: 'delete_album', methods: ['DELETE'])]
+    public function delete(int $id): Response
     {
-        // Récupère les données JSON envoyées dans la requête
-        $data = json_decode($request->getContent(), true);
+        $album = $this->entityManager->getRepository(Album::class)->find($id);
 
-        // Met à jour les propriétés de l'album avec les nouvelles données
-        $album->setNom($data['nom'] ?? $album->getNom());
-        $album->setCover($data['cover'] ?? $album->getCover());
-        $album->setCateg($data['categ'] ?? $album->getCateg());
-        $album->setYear($data['year'] ?? $album->getYear());
-
-        // Obtient le gestionnaire d'entités et met à jour l'album dans la base de données
-        $this->entityManager->persist($album);
-        $this->entityManager->flush();
-
-        // Retourne les données de l'album mis à jour sous forme de JSON
-        return $this->json($album);
-    }
-
-    /**
-     * @Route("/albums/{id}", name="album_delete", methods={"DELETE"})
-     */
-    public function delete(Album $album): Response
-    {
-        // Obtient le gestionnaire d'entités et supprime l'album de la base de données
+        if (!$album) {
+            return $this->json(['error' => 'Album not found'], Response::HTTP_NOT_FOUND);
+        }
 
         $this->entityManager->remove($album);
         $this->entityManager->flush();
-        // Retourne une réponse vide avec un code de statut HTTP indiquant la suppression réussie
-        return new Response(null, Response::HTTP_NO_CONTENT);
+
+        return $this->json(['message' => 'Album deleted successfully']);
     }
 }

@@ -1,94 +1,97 @@
 <?php
 
-
-
-
 namespace App\Controller;
 
 use App\Entity\Artist;
-use App\Entity\Artiste;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class ArtistController extends AbstractController
 {
-    private $repository;
     private $entityManager;
-    public function __construct(EntityManagerInterface $entityManager){
+
+    public function __construct(EntityManagerInterface $entityManager)
+    {
         $this->entityManager = $entityManager;
-        $this->repository = $entityManager->getRepository(Artist::class);
     }
 
-    #[Route('/albums', name: 'artist_index', methods: 'GET')]
-    public function index(): JsonResponse
+    #[Route('/artists', name: 'create_artist', methods: ['POST'])]
+    public function create(Request $request): Response
     {
-        // Récupère tous les artistes depuis la base de données
-        $artists = $$this->repository->findAll();
+        $requestData = json_decode($request->getContent(), true);
 
-        // Retourne les artistes sous forme de JSON
+    
+
+        $artist = new Artist();
+        $fullname = $request->request->get('fullname');
+        $label = $request->request->get('label');
+        $description = $request->request->get('description');
+
+        $this->entityManager->persist($artist);
+        $this->entityManager->flush();
+
+        return $this->json(['message' => 'Artist created successfully'], Response::HTTP_CREATED);
+    }
+
+    #[Route('/artist/{id}', name: 'get_artist', methods: ['GET'])]
+    public function get(int $id): Response
+    {
+        $artist = $this->entityManager->getRepository(Artist::class)->find($id);
+
+        if (!$artist) {
+            return $this->json(['error' => 'Artist not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->json($artist);
+    }
+
+    #[Route('/artists', name: 'get_artists', methods: ['GET'])]
+    public function getAll(): Response
+    {
+        $artists = $this->entityManager->getRepository(Artist::class)->findAll();
+
         return $this->json($artists);
     }
 
-    #[Route('/albums', name: 'artist_index', methods: 'GET')]
-    public function show(Artist $artist): JsonResponse
+    #[Route('/artists/{id}', name: 'update_artist', methods: ['PUT'])]
+    public function update(Request $request, int $id): Response
     {
-        // Retourne les détails d'un artiste spécifique sous forme de JSON
-        return $this->json($artist);
-    }
+        $artist = $this->entityManager->getRepository(Artist::class)->find($id);
 
-    #[Route('/albums', name: 'artist_create', methods: 'POST')]
-    public function create(Request $request): JsonResponse
-    {
-        // Récupère les données JSON envoyées dans la requête
-        $data = json_decode($request->getContent(), true);
+        if (!$artist) {
+            return $this->json(['error' => 'Artist not found'], Response::HTTP_NOT_FOUND);
+        }
 
-        // Crée une nouvelle instance de l'entité Artiste avec les données fournies
+        $requestData = json_decode($request->getContent(), true);
+
         $artist = new Artist();
-        $artist->setFullname($data['fullname']);
-        $artist->setLabel($data['label']);
-        $artist->setDescription($data['description']);
+        $artist->setFullname($requestData['fullname']);
+        $artist->setLabel($requestData['label']);
+        $artist->setDescription($requestData['description']);
+        
 
-        // Obtient le gestionnaire d'entités et persiste l'artiste dans la base de données
-        $this->entityManager->persist($artist);
-        $$this->entityManager->flush();
+        // Mettre à jour d'autres attributs si nécessaire
 
-        // Retourne les données de l'artiste créé sous forme de JSON
-        return $this->json($artist);
+        $this->entityManager->flush();
+
+        return $this->json(['message' => 'Artist updated successfully']);
     }
 
-    #[Route('/albums', name: 'artist_update', methods: 'PUT')]
-    public function update(Request $request, Artist $artist): JsonResponse
+    #[Route('/artists/{id}', name: 'delete_artist', methods: ['DELETE'])]
+    public function delete(int $id): Response
     {
-        // Récupère les données JSON envoyées dans la requête
-        $data = json_decode($request->getContent(), true);
+        $artist = $this->entityManager->getRepository(Artist::class)->find($id);
 
-        // Met à jour les propriétés de l'artiste avec les nouvelles données
-        $artist->setFullname($data['fullname'] ?? $artist->getFullname());
-        $artist->setLabel($data['label'] ?? $artist->getLabel());
-        $artist->setDescription($data['description'] ?? $artist->getDescription());
-
-        // Obtient le gestionnaire d'entités et met à jour l'artiste dans la base de données
-        $this->entityManager->persist($artist);
-        $$this->entityManager->flush();
-
-        // Retourne les données de l'artiste mis à jour sous forme de JSON
-        return $this->json($artist);
-    }
-
-    #[Route('/albums', name: 'artist_delete', methods: 'DELETE')]
-    public function delete(Artist $artist): Response
-    {
-        // Obtient le gestionnaire d'entités et supprime l'artiste de la base de données
+        if (!$artist) {
+            return $this->json(['error' => 'Artist not found'], Response::HTTP_NOT_FOUND);
+        }
 
         $this->entityManager->remove($artist);
-           $this->entityManager->flush();
+        $this->entityManager->flush();
 
-        // Retourne une réponse vide avec un code de statut HTTP indiquant la suppression réussie
-        return new Response(null, Response::HTTP_NO_CONTENT);
+        return $this->json(['message' => 'Artist deleted successfully']);
     }
 }
-
