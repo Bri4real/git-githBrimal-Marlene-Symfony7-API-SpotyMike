@@ -73,7 +73,7 @@ class AlbumController extends AbstractController
         $album->setNom($requestData['nom']);
         $album->setCover($requestData['cover']);
         $album->setCateg($requestData['categ']);
-        $album->setYear($requestData['year']);
+        $album->setYear($requestData['year'])
 
 
         
