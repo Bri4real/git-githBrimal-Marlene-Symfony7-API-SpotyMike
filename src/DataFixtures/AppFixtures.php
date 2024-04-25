@@ -1,54 +1,86 @@
 <?php
-
+ 
 namespace App\DataFixtures;
+ 
+use App\Entity\Album;
 use App\Entity\Artist;
 use App\Entity\User;
-use Doctrine\Bundle\FixturesBundle\Fixture;
+use App\Entity\Song;
+use App\Entity\Playlist;
+use App\Entity\Label;
+use DateTimeImmutable;
 use Doctrine\Persistence\ObjectManager;
-use Faker\Factory;
-use Faker\Provider\PhoneNumber;
-
+use Doctrine\Bundle\FixturesBundle\Fixture;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-
-class UsersFixtures extends Fixture
+ 
+class AppFixtures extends Fixture
 {
-    private $passwordHasher;
-
-    public function __construct(UserPasswordHasherInterface $passwordHasher)
+ 
+    private UserPasswordHasherInterface $hasher;
+ 
+    public function __construct(UserPasswordHasherInterface $hasher)
     {
-        $this->passwordHasher = $passwordHasher;
+        $this->hasher = $hasher;
     }
-
-    public function load(ObjectManager $manager)
+ 
+    public function load(ObjectManager $manager): void
     {
-        $faker = Factory::create();
-        $faker->addProvider(new PhoneNumber($faker));
-
-        for ($i = 0; $i < 6; $i++) {
-            $user = new User();
-            $user->setIdUser($faker->uuid);
-            $user->setFirstname($faker->firstName);
-            $user->setLastname($faker->lastName);
-            $user->setEmail($faker->email);
-            $user->setDateBirth($faker->dateTimeBetween("-40 years", "-18 years"));
-            $user->setCreatedAt(new \DateTimeImmutable());
-            $user->setUpdateAt(new \DateTimeImmutable()); // Fixer la faute de frappe sur setUpdatedAt()
-
-            // Ajouter sexe (homme ou femme)
-            $user->setSexe($faker->randomElement(['0', '1']));
-
-            // Générer un numéro de téléphone français au format spécifique
-            $phoneNumber = '+33 ' . substr($faker->phoneNumber, 1);
-            $user->setTel($phoneNumber); // Fixer le typo sur setTel()
-
-            // Générer un mot de passe aléatoire pour chaque utilisateur
-            $password = 'password123'; // Utilisation du même mot de passe pour la démo
-            $hashedPassword = $this->passwordHasher->hashPassword($user, $password);
-            $user->setPassword($hashedPassword);
-
+        for ($i = 1; $i < 8; $i++) {
+ 
+            // Add New User
+            $user = new User;
+            $user->setIdUser(uniqid());
+            $sexe = rand(0, 1) === 0 ? 0 : 1;
+            $user->setSexe($sexe);
+            $user->setFirstname("User_" . $i);
+            $user->setLastname("User_" . $i);
+            $user->setEmail("user_" . $i . "@gmail.com");
+            $user->setDateBirth(new DateTimeImmutable());
+            $user->setCreatedAt(new DateTimeImmutable());
+            $user->setUpdateAt(new DateTimeImmutable());
+            $hash = $this->hasher->hashPassword($user, "TestUser_" . $i);
+            $user->setPassword($hash);
             $manager->persist($user);
+            $manager->flush();
+ 
+            // Add New Artist
+            $artist = new Artist;
+            $artist->setFullname("Artist_" . $i);
+            $artist->setUserIdUser($user);
+            $artist->setDescription("Artist_" . $i);
+            $artist->setCreatedAt(new DateTimeImmutable());
+            $artist->setUpdateAt(new DateTimeImmutable());
+            $manager->persist($artist);
+            $manager->flush();
+ 
+           
+ 
+            // Add New Album
+            $album = new Album;
+            $album->setIdAlbum($i);
+            $album->setArtistUserIdUser($artist);
+            $album->setNom("Album_" . $i);
+            $album->setCateg("Album_" . $i);
+            $album->setCover("Album_" . $i);
+            $album->setYear(rand(1900, 2024));
+            $album->setCreatedAt(new DateTimeImmutable());
+            $album->setUpdateAt(new DateTimeImmutable());
+            $manager->persist($album);
+            $manager->flush();
+ 
+            // Add New Song
+            $song = new Song;
+            $song->setIdSong($i);
+            $song->setTitle("Song_" . $i);
+            $song->setUrl("Song_" . $i);
+            $song->setCover("Song_" . $i);
+            $song->setVisibility(rand(0, 1));
+            $song->setCreateAt(new DateTimeImmutable());
+            $song->setAlbum($album);
+            $manager->persist($song);
+            $manager->flush();
+ 
         }
-
-        $manager->flush();
     }
 }
+ 
