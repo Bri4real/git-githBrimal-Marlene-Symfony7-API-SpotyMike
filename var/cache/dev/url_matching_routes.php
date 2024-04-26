@@ -21,13 +21,7 @@ return [
             [['_route' => 'create_song', '_controller' => 'App\\Controller\\SongController::create'], null, ['POST' => 0], null, false, false, null],
             [['_route' => 'get_songs', '_controller' => 'App\\Controller\\SongController::getAll'], null, ['GET' => 0], null, false, false, null],
         ],
-        '/user' => [
-            [['_route' => 'user_post', '_controller' => 'App\\Controller\\UserController::create'], null, ['POST' => 0], null, false, false, null],
-            [['_route' => 'user_put', '_controller' => 'App\\Controller\\UserController::update'], null, ['PUT' => 0], null, false, false, null],
-            [['_route' => 'user_delete', '_controller' => 'App\\Controller\\UserController::delete'], null, ['DELETE' => 0], null, false, false, null],
-            [['_route' => 'user_get', '_controller' => 'App\\Controller\\UserController::read'], null, ['GET' => 0], null, false, false, null],
-        ],
-        '/user/all' => [[['_route' => 'user_get_all', '_controller' => 'App\\Controller\\UserController::readAll'], null, ['GET' => 0], null, false, false, null]],
+        '/user' => [[['_route' => 'app_user_update', '_controller' => 'App\\Controller\\UserController::updateUser'], null, ['POST' => 0], null, false, false, null]],
         '/login_check' => [[['_route' => 'api_login_check'], null, null, null, false, false, null]],
     ],
     [ // $regexpList

@@ -56,6 +56,15 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->save($user, true);
     }
 
+    public function findUsersWithArtistInfo()
+    {
+        return $this->createQueryBuilder('u')
+            ->leftJoin('App\Entity\Artist', 'a',  'WITH', 'a.User_idUser = u.id')
+            ->addSelect('a') // Sélectionner les données de l'artiste également
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */

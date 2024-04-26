@@ -21,7 +21,7 @@ return [
     'user_delete' => [[], ['_controller' => 'App\\Controller\\UserController::delete'], [], [['text', '/user']], [], [], []],
     'user_get' => [[], ['_controller' => 'App\\Controller\\UserController::read'], [], [['text', '/user']], [], [], []],
     'user_get_all' => [[], ['_controller' => 'App\\Controller\\UserController::readAll'], [], [['text', '/user/all']], [], [], []],
-    'api_login_check' => [[], [], [], [['text', '/api/login_check']], [], [], []],
+    'api_login_check' => [[], [], [], [['text', '/login_check']], [], [], []],
     'App\Controller\AlbumController::index' => [[], ['_controller' => 'App\\Controller\\AlbumController::index'], [], [['text', '/albums']], [], [], []],
     'App\Controller\ArtistController::index' => [[], ['_controller' => 'App\\Controller\\ArtistController::show'], [], [['text', '/albums']], [], [], []],
     'App\Controller\ArtistController::create' => [[], ['_controller' => 'App\\Controller\\ArtistController::create'], [], [['text', '/albums']], [], [], []],

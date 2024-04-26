@@ -232,6 +232,11 @@
         <argument type="service" id=".service_locator.jUv.zyj.App\Controller\LoginController"/>
       </call>
     </service>
+    <service id="app.event.jwt_created_listener" class="App\EventListener\JwtCreatedListener" autowire="true" autoconfigure="true">
+      <tag name="kernel.event_listener" event="lexik_jwt_authentication.on_jwt_created" method="onJWTCreated"/>
+      <argument type="service" id="request_stack"/>
+      <argument type="service" id="App\Repository\UserRepository"/>
+    </service>
     <service id="App\Entity" class="App\Entity" abstract="true">
       <tag name="container.excluded" source="in &quot;config/services.yaml&quot;"/>
     </service>
@@ -277,6 +282,8 @@
       <tag name="controller.service_arguments"/>
       <tag name="container.service_subscriber"/>
       <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="App\Services\JWTService"/>
+      <argument type="service" id="App\Repository\UserRepository"/>
       <call method="setContainer">
         <argument type="service" id=".service_locator.jUv.zyj.App\Controller\UserController"/>
       </call>
@@ -284,6 +291,9 @@
     <service id="App\DataFixtures\AppFixtures" class="App\DataFixtures\AppFixtures" autowire="true" autoconfigure="true">
       <tag name="doctrine.fixture.orm"/>
       <argument type="service" id="security.user_password_hasher"/>
+    </service>
+    <service id="App\EventListener\CustomJwtCreatedListener" class="App\EventListener\CustomJwtCreatedListener" autowire="true" autoconfigure="true">
+      <tag name="container.error" message="The autoloader expected class &quot;App\EventListener\CustomJwtCreatedListener&quot; to be defined in file &quot;/Users/brimalmartin/ESIEA PROJECTS/git-githBrimal-Marlene-Symfony7-API-SpotyMike/vendor/composer/../../src/EventListener/CustomJwtCreatedListener.php&quot;. The file was found but the class was not in it, the class name or namespace probably has a typo."/>
     </service>
     <service id="App\Repository\AlbumRepository" class="App\Repository\AlbumRepository" autowire="true" autoconfigure="true">
       <tag name="doctrine.repository_service"/>
@@ -317,6 +327,11 @@
       <argument type="service" id="router.default"/>
     </service>
     <service id="App\Services\ApiService" class="App\Services\ApiService" autowire="true" autoconfigure="true"/>
+    <service id="App\Services\JWTService" class="App\Services\JWTService" autowire="true" autoconfigure="true">
+      <argument type="service" id="lexik_jwt_authentication.jwt_manager"/>
+      <argument type="service" id="lexik_jwt_authentication.jws_provider.lcobucci"/>
+      <argument type="service" id="App\Repository\UserRepository"/>
+    </service>
     <service id="argument_metadata_factory" class="Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadataFactory"/>
     <service id="argument_resolver.backed_enum_resolver" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\BackedEnumValueResolver">
       <tag priority="100" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\BackedEnumValueResolver">controller.argument_value_resolver</tag>
@@ -347,7 +362,7 @@
     </service>
     <service id="argument_resolver.service" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">
       <tag priority="-50" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">controller.argument_value_resolver</tag>
-      <argument type="service" id=".service_locator.hrNtiYe"/>
+      <argument type="service" id=".service_locator.Zygf3f6"/>
     </service>
     <service id="argument_resolver.default" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">
       <tag priority="-100" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">controller.argument_value_resolver</tag>
@@ -1220,6 +1235,14 @@
       <argument type="service" id="logger" on-invalid="null"/>
       <argument type="service" id="request_stack" on-invalid="null"/>
       <call method="addListener">
+        <argument>lexik_jwt_authentication.on_jwt_created</argument>
+        <argument type="collection">
+          <argument type="service_closure" id="app.event.jwt_created_listener"/>
+          <argument>onJWTCreated</argument>
+        </argument>
+        <argument>0</argument>
+      </call>
+      <call method="addListener">
         <argument>Symfony\Component\Security\Http\Event\CheckPassportEvent</argument>
         <argument type="collection">
           <argument type="service_closure" id="security.listener.user_provider"/>
@@ -1537,7 +1560,7 @@
     </service>
     <service id="argument_resolver.not_tagged_controller" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\NotTaggedControllerValueResolver">
       <tag name="controller.argument_value_resolver" priority="-200"/>
-      <argument type="service" id=".service_locator.hrNtiYe"/>
+      <argument type="service" id=".service_locator.Zygf3f6"/>
     </service>
     <service id="routing.resolver" class="Symfony\Component\Config\Loader\LoaderResolver">
       <call method="addLoader">
@@ -4803,19 +4826,7 @@
         <argument key="artist" type="service_closure" id=".errored..service_locator.v6sch5A.App\Entity\Artist"/>
       </argument>
     </service>
-    <service id=".service_locator.Hz5btge" class="Symfony\Component\DependencyInjection\ServiceLocator">
-      <tag name="container.service_locator"/>
-      <argument type="collection">
-        <argument key="user" type="service_closure" id=".errored..service_locator.Hz5btge.App\Entity\User"/>
-      </argument>
-    </service>
-    <service id=".service_locator.r4u1mW2" class="Symfony\Component\DependencyInjection\ServiceLocator">
-      <tag name="container.service_locator"/>
-      <argument type="collection">
-        <argument key="passwordHash" type="service_closure" id="security.user_password_hasher"/>
-      </argument>
-    </service>
-    <service id=".service_locator.hrNtiYe" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.Zygf3f6" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="App\Controller\AlbumController::delete" type="service_closure" id=".service_locator.KOhdJhL"/>
@@ -4824,8 +4835,6 @@
         <argument key="App\Controller\ArtistController::delete" type="service_closure" id=".service_locator.v6sch5A"/>
         <argument key="App\Controller\ArtistController::show" type="service_closure" id=".service_locator.v6sch5A"/>
         <argument key="App\Controller\ArtistController::update" type="service_closure" id=".service_locator.v6sch5A"/>
-        <argument key="App\Controller\UserController::create" type="service_closure" id=".service_locator.r4u1mW2"/>
-        <argument key="App\Controller\UserController::isActive" type="service_closure" id=".service_locator.Hz5btge"/>
         <argument key="App\Kernel::loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="App\Kernel::registerContainerConfiguration" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="kernel::loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
@@ -4836,8 +4845,6 @@
         <argument key="App\Controller\ArtistController:delete" type="service_closure" id=".service_locator.v6sch5A"/>
         <argument key="App\Controller\ArtistController:show" type="service_closure" id=".service_locator.v6sch5A"/>
         <argument key="App\Controller\ArtistController:update" type="service_closure" id=".service_locator.v6sch5A"/>
-        <argument key="App\Controller\UserController:create" type="service_closure" id=".service_locator.r4u1mW2"/>
-        <argument key="App\Controller\UserController:isActive" type="service_closure" id=".service_locator.Hz5btge"/>
         <argument key="kernel:loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="kernel:registerContainerConfiguration" type="service_closure" id=".service_locator.y4_Zrx."/>
       </argument>
@@ -5356,9 +5363,6 @@
     </service>
     <service id=".errored..service_locator.v6sch5A.App\Entity\Artist" class="App\Entity\Artist">
       <tag name="container.error" message="Cannot autowire service &quot;.service_locator.v6sch5A&quot;: it needs an instance of &quot;App\Entity\Artist&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
-    </service>
-    <service id=".errored..service_locator.Hz5btge.App\Entity\User" class="App\Entity\User">
-      <tag name="container.error" message="Cannot autowire service &quot;.service_locator.Hz5btge&quot;: it needs an instance of &quot;App\Entity\User&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
     </service>
     <service id=".console.command.about.lazy" class="Symfony\Component\Console\Command\LazyCommand">
       <argument>about</argument>
@@ -6197,7 +6201,7 @@
     <service id="lexik_jwt_authentication.key_loader" alias="lexik_jwt_authentication.key_loader.raw" public="true"/>
     <service id="container.env_var_processors_locator" alias=".service_locator.bJ.4HC5" public="true"/>
     <service id="twig.loader.filesystem" alias="twig.loader.native_filesystem"/>
-    <service id="argument_resolver.controller_locator" alias=".service_locator.hrNtiYe"/>
+    <service id="argument_resolver.controller_locator" alias=".service_locator.Zygf3f6"/>
     <service id="doctrine.id_generator_locator" alias=".service_locator.KLVvNIq"/>
     <service id="twig.loader" alias="twig.loader.native_filesystem"/>
     <service id="Psr\Log\LoggerInterface" alias="logger"/>
@@ -6215,8 +6219,6 @@
     <service id=".service_locator.gFlme_s" alias=".service_locator.y4_Zrx."/>
     <service id=".service_locator..MsFB5z" alias=".service_locator.KOhdJhL"/>
     <service id=".service_locator.bvsSv3c" alias=".service_locator.v6sch5A"/>
-    <service id=".service_locator.EmZ4cZI" alias=".service_locator.Hz5btge"/>
-    <service id=".service_locator.tSJwMdF" alias=".service_locator.r4u1mW2"/>
     <service id=".service_locator.kHs.Tsl" alias=".service_locator.jUv.zyj"/>
   </services>
 </container>

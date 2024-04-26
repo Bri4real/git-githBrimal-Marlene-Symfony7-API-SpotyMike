@@ -3,13 +3,47 @@
 namespace App\Services;
 
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-
 
 class ApiService
 {
+    private array $allowedFields;
+    private array $requiredFields;
+    /**
+     * Vérifie si les données fournies sont valides et complètes pour un type spécifique.
+     * 
+     * @param string $type - Le type de données à valider (par exemple 'user').
+     * @param array $data - Les données fournies à valider.
+     * @return array - Un tableau contenant un indicateur de validation et les champs manquants/invalides.
+     */
+    public function checkValidData(string $type, array $data): array
+    {
+        // Vérifie si le type est autorisé
+        if (!isset($this->allowedFields[$type])) {
+            return [
+                'yes' => false,
+                'missingFields' => [],
+                'invalidFields' => array_keys($data)
+            ];
+        }
+
+        $allowedFields = $this->allowedFields[$type]['body'];
+
+        // Vérifie si des champs requis sont manquants
+        $missingFields = array_diff($allowedFields, array_keys($data));
+
+        // Vérifie si des champs non autorisés sont présents
+        $invalidFields = array_diff(array_keys($data), $allowedFields);
+
+        // Vérifie si toutes les conditions sont satisfaites
+        $isValid = empty($missingFields) && empty($invalidFields);
+
+        return [
+            'yes' => $isValid,
+            'missingFields' => $missingFields,
+            'invalidFields' => $invalidFields
+        ];
+    }
+
 
 
     /**
@@ -211,25 +245,9 @@ class ApiService
         array $requiredQueryProperties,
         bool $isStrictRequired = true
     ): array {
-        // echo "===========Params============: \n";
-        // echo "allowedBodyProperties: \n";
-        // print_r($allowedBodyProperties);
-        // echo "requiredBodyProperties: \n";
-        // print_r($requiredBodyProperties);
-        // echo "===========Params============: \n";
-
 
         $hasValidBody = $this->hasValidBody($request, $allowedBodyProperties, $requiredBodyProperties, $isStrictRequired);
         $hasValidQueryParameters = $this->hasValidQueryParameters($request, $allowedQueryProperties, $requiredQueryProperties);
-
-        // $hasValidBody['yes'] && $hasValidQueryParameters['yes'],
-
-        // echo "=======================: \n";
-        // echo "hasValidBody: \n";
-        // print($hasValidBody['yes']);
-        // echo "hasValidQueryParameters: \n";
-        // print($hasValidQueryParameters['yes']);
-        // echo "=======================: \n";
 
 
         return [
@@ -277,58 +295,4 @@ class ApiService
 
         return $uppercase && $lowercase && $digit && $symbol && strlen($password) >= 6;
     }
-
-
-
-
-    public function hasValidFiles(Request $request, array $allowedFilesProperties, array $requiredFilesProperties): array
-    {
-        $response = [
-            'error' => false,
-            'message' => '',
-            'datas' => null
-        ];
-
-        $files = $request->files->all();
-
-        $hasOnlyValidFiles = true;
-        $hasRequiredFiles = true;
-        $invalidKeys = [];
-        $missingKeys = [];
-
-        foreach ($files as $key => $file) {
-            if (!in_array($key, $allowedFilesProperties)) {
-                $hasOnlyValidFiles = false;
-                $invalidKeys[] = $key;
-            }
-        }
-
-        foreach ($requiredFilesProperties as $requiredFileProperty) {
-            if (!array_key_exists($requiredFileProperty, $files)) {
-                $hasRequiredFiles = false;
-                $missingKeys[] = $requiredFileProperty;
-            }
-        }
-
-        $response['error'] = !$hasOnlyValidFiles || !$hasRequiredFiles;
-        $response['message'] = 'Invalid or missing files.';
-        $response['datas'] = [
-            'yes' => $hasOnlyValidFiles && $hasRequiredFiles,
-            'invalidKeys' => $invalidKeys,
-            'missingKeys' => $missingKeys
-        ];
-
-        return $response;
-    }
-
-
-    /**
-     * Handle the upload of multiple files.
-     *
-     * @param Request $request The request object
-     * @param array $fieldsName The field names of the uploaded files
-     * @param string $fileNamePrefix The prefix for the file names
-     * @return array An array of uploaded file names with relative paths
-     * @throws FileException If any file cannot be moved to the upload directory
-     */
 }

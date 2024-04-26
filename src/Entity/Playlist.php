@@ -36,7 +36,8 @@ class Playlist
     private ?PlaylistHasSong $playlistHasSong = null;
 
     public function __construct()
-    {}
+    {
+    }
 
     public function getId(): ?int
     {

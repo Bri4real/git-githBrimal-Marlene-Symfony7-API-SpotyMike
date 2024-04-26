@@ -3,121 +3,112 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Services\JWTService;
 use DateTimeImmutable;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserController extends AbstractController
 {
-    private $repository;
+    private $jwtService;
     private $entityManager;
+    private $userRepository;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, JWTService $jwtService, UserRepository $userRepository)
     {
         $this->entityManager = $entityManager;
-        $this->repository = $entityManager->getRepository(User::class);
+        $this->jwtService = $jwtService;
+        $this->userRepository = $userRepository;
     }
 
-    // Dans la classe User
-
-    public function isActive(User $user): bool
+    #[Route('/user', name: 'app_user_update', methods: ['POST'])]
+    public function updateUser(Request $request): JsonResponse
     {
-        // Vérifie si le compte de l'utilisateur est actif
-        return $user->isActive();
-    }
+        $userPayload = $this->userRepository->findOneBy(['email' => $this->getUser()->getUserIdentifier()]);
+        $user = $this->userRepository->find($userPayload->getIdUser());
 
+        if (!$userPayload) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Authentification requise. Vous devez être connecté pour effectuer cette action.',
+                'status' => 'Non authentifié',
+                'code' => JsonResponse::HTTP_UNAUTHORIZED
+            ]);
+        }
 
-    #[Route('/user', name: 'user_post', methods: 'POST')]
-    public function create(Request $request, UserPasswordHasherInterface $passwordHash): JsonResponse
-    {
+        $user = $this->userRepository->findOneBy($userPayload['email']);
+        $requestData = $request->request->all();
 
-        $user = new User();
-        $user->setEmail("Mike");
-        $user->setIdUser("Mike");
-        $user->setCreatedAt(new DateTimeImmutable());
+        // Vérifier si les clés fournies sont autorisées
+        $allowedKeys = ['firstname', 'lastname', 'tel', 'sexe'];
+        $missingKeys = array_diff(array_keys($requestData), $allowedKeys);
+        if (!empty($missingKeys)) {
+            return $this->json([
+                'error' => true,
+                'message' => 'Les données fournies sont invalides ou incomplètes.',
+            ], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Valider les données
+        $tel = $requestData['tel'] ?? null;
+        if ($tel !== null && !preg_match('/^0[6-7][0-9]{8}$/', $tel)) {
+            return $this->json([
+                'error' => true,
+                'message' => 'Le format du numéro de téléphone est invalide.',
+            ], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        $sexe = $requestData['sexe'] ?? null;
+        if ($sexe !== null && !in_array($sexe, [0, 1])) {
+            return $this->json([
+                'error' => true,
+                'message' => 'La valeur du champ sexe est invalide. Les valeurs autorisées sont 0 pour Femme, 1 pour Homme.',
+            ], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Vérifier si le numéro de téléphone est déjà utilisé
+        if ($tel !== null) {
+            $existingUser = $this->userRepository->findOneBy(['tel' => $tel]);
+            if ($existingUser && $existingUser->getId() !== $user->getId()) {
+                return $this->json([
+                    'error' => true,
+                    'message' => 'Conflit de données. Le numéro de téléphone est déjà utilisé par un autre utilisateur.',
+                ], JsonResponse::HTTP_CONFLICT);
+            }
+        }
+
+        // Mettre à jour les données de l'utilisateur
+        foreach ($requestData as $key => $value) {
+            switch ($key) {
+                case 'firstname':
+                    $user->setFirstname($value);
+                    break;
+                case 'lastname':
+                    $user->setLastname($value);
+                    break;
+                case 'tel':
+                    $user->setTel($value);
+                    break;
+                case 'sexe':
+                    $user->setSexe($value);
+                    break;
+                default:
+                    break;
+            }
+        }
+
         $user->setUpdateAt(new DateTimeImmutable());
-        $password = "Mike";
 
-        $hash = $passwordHash->hashPassword($user, $password);
-        $user->setPassword($hash);
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
         return $this->json([
-            'isNotGoodPassword' => ($passwordHash->isPasswordValid($user, 'Zoubida')),
-            'isGoodPassword' => ($passwordHash->isPasswordValid($user, $password)),
-            'user' => $user->serializer(),
-            'path' => 'src/Controller/UserController.php',
+            'error' => false,
+            'message' => 'Votre mise à jour a bien été prise en compte.',
         ]);
-    }
-
-    #[Route('/user', name: 'user_put', methods: 'PUT')]
-    public function update(): JsonResponse
-    {
-        $phone = "0668000000";
-        if (preg_match("/^[0-9]{10}$/", $phone)) {
-
-            $user = $this->repository->findOneBy(["id" => 1]);
-            $old = $user->getTel();
-            $user->setTel($phone);
-            $this->entityManager->flush();
-            return $this->json([
-                "New_tel" => $user->getTel(),
-                "Old_tel" => $old,
-                "user" => $user->serializer(),
-            ]);
-        }
-    }
-
-    #[Route('/user', name: 'user_delete', methods: 'DELETE')]
-    public function delete(): JsonResponse
-    {
-        $this->entityManager->remove($this->repository->findOneBy(["id" => 1]));
-        $this->entityManager->flush();
-        return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/UserController.php',
-        ]);
-    }
-
-    #[Route('/user', name: 'user_get', methods: 'GET')]
-    public function read(): JsonResponse
-    {
-
-
-        $serializer = new Serializer([new ObjectNormalizer()]);
-        // $jsonContent = $serializer->serialize($person, 'json');
-        return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/UserController.php',
-        ]);
-    }
-
-    #[Route('/user/all', name: 'user_get_all', methods: 'GET')]
-    public function readAll(): JsonResponse
-    {
-        $result = [];
-
-        try {
-            if (count($users = $this->repository->findAll()) > 0)
-                foreach ($users as $user) {
-                    array_push($result, $user->serializer());
-                }
-            return new JsonResponse([
-                'data' => $result,
-                'message' => 'Successful'
-            ], 400);
-        } catch (\Exception $exception) {
-            return new JsonResponse([
-                'message' => $exception->getMessage()
-            ], 404);
-        }
     }
 }
