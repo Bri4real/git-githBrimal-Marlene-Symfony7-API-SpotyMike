@@ -124,7 +124,6 @@ class RegistrationController extends AbstractController
             ],);
         }
 
-        // Création de l'utilisateur
         $user = new User();
         $hashedPassword = $passwordHash->hashPassword($user, $password);
         $currentTime = new DateTimeImmutable();
@@ -136,12 +135,10 @@ class RegistrationController extends AbstractController
             ->setPassword($hashedPassword)
             ->setTel($tel)
             ->setDateBirth($dateBirth)
-            ->setIsActive('Active')
+            ->setActive('Actif')
             ->setIdUser(Uuid::v1())
             ->setCreatedAt($currentTime)
             ->setUpdateAt($currentTime);
-
-
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();
@@ -202,15 +199,14 @@ class RegistrationController extends AbstractController
         return preg_match($passRegex, $password);
     }
 
+
     private function checkEmail(?string $email): bool
     {
-        // Si l'email est null, il est considéré comme valide
         if ($email === null) {
             return true;
         }
-
-        // Utilisation de filter_var pour valider l'email
-        return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+        $regex = '/^(([^<>()[\]\\.,;:\s@"\']+(\.[^<>()[\]\\.,;:\s@"\']+)*)|("[^"\']+"))@((\[\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\])|(([a-zA-Z\d\-]+\.)+[a-zA-Z]{2,}))$/';
+        return preg_match($regex, $email) === 1;
     }
 
 

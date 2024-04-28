@@ -42,8 +42,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'json')]
     private ?array $roles = [];
 
-    #[ORM\Column(type: "boolean", nullable: true)]
-    private ?bool $isActive = true;
+    #[ORM\Column(length: 30, nullable: true)]
+    private ?string $active = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $dateBirth = null;
@@ -130,16 +130,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function setIsActive(bool $isActive): self
+
+
+
+    public function getActive(): ?string
     {
-        $this->isActive = $isActive;
+        return $this->active;
+    }
+    public function setActive(?string $active): static
+    {
+        $this->active = $active;
         return $this;
     }
 
-    public function getIsActive(): bool
-    {
-        return $this->isActive;
-    }
     public function setTel(?string $tel): static
     {
         $this->tel = $tel;

@@ -232,10 +232,6 @@
         <argument type="service" id=".service_locator.jUv.zyj.App\Controller\LoginController"/>
       </call>
     </service>
-    <service id="app.event.jwt_created_listener" class="App\EventListener\JwtCreatedListener" autowire="true" autoconfigure="true">
-      <tag name="kernel.event_listener" event="lexik_jwt_authentication.on_jwt_created" method="onJWTCreated"/>
-      <argument type="service" id="request_stack"/>
-    </service>
     <service id="App\Entity" class="App\Entity" abstract="true">
       <tag name="container.excluded" source="in &quot;config/services.yaml&quot;"/>
     </service>
@@ -343,9 +339,6 @@
       <argument type="service" id="router.default"/>
     </service>
     <service id="App\Services\ApiService" class="App\Services\ApiService" autowire="true" autoconfigure="true"/>
-    <service id="App\Services\ArtistSerializer" class="App\Services\ArtistSerializer" autowire="true" autoconfigure="true">
-      <tag name="container.error" message="The autoloader expected class &quot;App\Services\ArtistSerializer&quot; to be defined in file &quot;/Users/brimalmartin/ESIEA PROJECTS/git-githBrimal-Marlene-Symfony7-API-SpotyMike/vendor/composer/../../src/Services/ArtistSerializer.php&quot;. The file was found but the class was not in it, the class name or namespace probably has a typo."/>
-    </service>
     <service id="App\Services\JWTService" class="App\Services\JWTService" autowire="true" autoconfigure="true">
       <argument type="service" id="lexik_jwt_authentication.jwt_manager"/>
       <argument type="service" id="lexik_jwt_authentication.jws_provider.lcobucci"/>
@@ -1253,14 +1246,6 @@
       <argument type="service" id="debug.stopwatch"/>
       <argument type="service" id="logger" on-invalid="null"/>
       <argument type="service" id="request_stack" on-invalid="null"/>
-      <call method="addListener">
-        <argument>lexik_jwt_authentication.on_jwt_created</argument>
-        <argument type="collection">
-          <argument type="service_closure" id="app.event.jwt_created_listener"/>
-          <argument>onJWTCreated</argument>
-        </argument>
-        <argument>0</argument>
-      </call>
       <call method="addListener">
         <argument>Symfony\Component\Security\Http\Event\CheckPassportEvent</argument>
         <argument type="collection">
