@@ -132,4 +132,51 @@ class UserController extends AbstractController
             ], JsonResponse::HTTP_NOT_FOUND);
         }
     }
+
+    #[Route('/account-deactivation', name: 'app_delete_user', methods: ['DELETE'])]
+    public function deleteUser(Request $request): JsonResponse
+    {
+        $userData = $this->jwtService->checkToken($request);
+
+        if (is_bool($userData)) {
+            return $this->json($this->jwtService->sendJsonErrorToken($userData));
+        }
+
+        if (!$userData) {
+            return $this->json([
+                'error' => true,
+                'message' => 'Authentication requise. Vous devez être connecté pour effectuer cette action.',
+                'status' => 'Non authentifié'
+            ], 401);
+        }
+
+        if ($userData->getActive() === 'Inactive') {
+            return $this->json([
+                'error' => true,
+                'message' => 'Le compte est déjà désactivé.',
+                'status' => 'Compte déjà désactivé'
+            ], 409);
+        }
+
+        $user = $userData;
+
+        $user->setActive('Inactive');
+        $user->setUpdateAt(new DateTimeImmutable());
+
+        // Deactivate associated artist profile if exists
+        if ($user->getArtist()) {
+            $artist = $user->getArtist();
+            $artist->setActive('Inactive');
+            $this->entityManager->persist($artist);
+        }
+
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Votre compte a été avec succès.Nous sommes désolés de vous voir partir.',
+            'status' => 'Succès'
+        ], 200);
+    }
 }
