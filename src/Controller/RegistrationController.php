@@ -143,7 +143,7 @@ class RegistrationController extends AbstractController
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        return $this->json([
+        return new JsonResponse([
             'error' => false,
             'message' => "L'utilisateur a bien été créé avec succès.",
             'user' => $user->registerSerializer(),

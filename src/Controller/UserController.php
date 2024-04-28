@@ -16,99 +16,120 @@ class UserController extends AbstractController
 {
     private $jwtService;
     private $entityManager;
-    private $userRepository;
+    private $repo;
 
-    public function __construct(EntityManagerInterface $entityManager, JWTService $jwtService, UserRepository $userRepository)
+    public function __construct(EntityManagerInterface $entityManager, JWTService $jwtService)
     {
         $this->entityManager = $entityManager;
         $this->jwtService = $jwtService;
-        $this->userRepository = $userRepository;
+        $this->repo = $entityManager->getRepository(User::class);
     }
-
-    #[Route('/user', name: 'app_user_update', methods: ['POST'])]
+    #[Route('/user', name: 'update_user', methods: 'POST')]
     public function updateUser(Request $request): JsonResponse
     {
-        $userPayload = $this->userRepository->findOneBy(['email' => $this->getUser()->getUserIdentifier()]);
-        $user = $this->userRepository->find($userPayload->getIdUser());
+        try {
+            // Récupération de l'utilisateur actuellement connecté
+            $userData = $this->getUser()->getUserIdentifier();
+            if ($userData) {
+                // Recherche de l'utilisateur dans la base de données
+                $user = $this->repo->findOneBy(['email' => $userData]);
+            } else {
+                // Retourne une réponse si l'utilisateur n'est pas authentifié
+                return new JsonResponse([
+                    'error' => true,
+                    'message' => 'Authentification requise. Vous devez être connecté pour effectuer cette action.',
+                ], JsonResponse::HTTP_UNAUTHORIZED);
+            }
 
-        if (!$userPayload) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => 'Authentification requise. Vous devez être connecté pour effectuer cette action.',
-                'status' => 'Non authentifié',
-                'code' => JsonResponse::HTTP_UNAUTHORIZED
-            ]);
-        }
+            // Récupération des données de la requête
+            $firstName = $request->request->get('firstname');
+            $lastName = $request->request->get('lastname');
+            $tel = $request->request->get('tel');
+            $sexe = $request->request->get('sexe');
 
-        $user = $this->userRepository->findOneBy($userPayload['email']);
-        $requestData = $request->request->all();
+            // Pattern pour vérifier le format du numéro de téléphone
+            $phoneRegex = '/^0[1-9][0-9]{8}$|^01[0-9]{8}$/';
 
-        // Vérifier si les clés fournies sont autorisées
-        $allowedKeys = ['firstname', 'lastname', 'tel', 'sexe'];
-        $missingKeys = array_diff(array_keys($requestData), $allowedKeys);
-        if (!empty($missingKeys)) {
-            return $this->json([
-                'error' => true,
-                'message' => 'Les données fournies sont invalides ou incomplètes.',
-            ], JsonResponse::HTTP_BAD_REQUEST);
-        }
+            // Vérification de la validité du champ 'sexe'
+            if ($sexe !== null && !in_array($sexe, ['0', '1'])) {
+                return new JsonResponse([
+                    'error' => true,
+                    'message' => 'La valeur du champ sexe est invalide. Les valeurs autorisées sont 0 pour Femme, 1 pour Homme.',
+                    'status' => 'Valeur de sexe invalide '
+                ], 400);
+            }
 
-        // Valider les données
-        $tel = $requestData['tel'] ?? null;
-        if ($tel !== null && !preg_match('/^0[6-7][0-9]{8}$/', $tel)) {
-            return $this->json([
-                'error' => true,
-                'message' => 'Le format du numéro de téléphone est invalide.',
-            ], JsonResponse::HTTP_BAD_REQUEST);
-        }
+            // Vérification du format du numéro de téléphone
+            if (isset($tel) && !preg_match($phoneRegex, $tel)) {
+                return new JsonResponse([
+                    'error' => true,
+                    'message' => 'Le format du numéro de téléphone est invalide.',
+                    'status' => 'Format de téléphone invalide '
+                ], 400);
+            }
 
-        $sexe = $requestData['sexe'] ?? null;
-        if ($sexe !== null && !in_array($sexe, [0, 1])) {
-            return $this->json([
-                'error' => true,
-                'message' => 'La valeur du champ sexe est invalide. Les valeurs autorisées sont 0 pour Femme, 1 pour Homme.',
-            ], JsonResponse::HTTP_BAD_REQUEST);
-        }
+            // Vérification de la longueur des champs 'firstname' et 'lastname'
+            if (
+                isset($firstName) && (strlen($firstName) < 1 || strlen($firstName) > 60) ||
+                isset($lastName) && (strlen($lastName) < 1 || strlen($lastName) > 60)
+            ) {
+                return new JsonResponse([
+                    'error' => true,
+                    'message' => 'Les données fournies sont invalides ou incomplètes.',
+                    'status' => 'Données fournies non valides '
+                ], 400);
+            }
 
-        // Vérifier si le numéro de téléphone est déjà utilisé
-        if ($tel !== null) {
-            $existingUser = $this->userRepository->findOneBy(['tel' => $tel]);
-            if ($existingUser && $existingUser->getIdUser() !== $user->getIdUser()) {
-                return $this->json([
+            // Vérification des clés de la requête
+            $allowedKeys = ['firstname', 'lastname', 'tel', 'sexe'];
+            $diff = array_diff(array_keys($request->request->all()), $allowedKeys);
+            if (count($diff) > 0) {
+                return new JsonResponse([
+                    'error' => true,
+                    'message' => 'Les données fournies sont invalides ou incomplètes.',
+                    'status' => 'Données fournies non valides '
+                ], 400);
+            }
+
+            // Vérification de conflit de données pour le numéro de téléphone
+            $existingUser = $this->repo->findOneBy(['tel' => $tel]);
+            if ($existingUser && $existingUser !== $user) {
+                return new JsonResponse([
                     'error' => true,
                     'message' => 'Conflit de données. Le numéro de téléphone est déjà utilisé par un autre utilisateur.',
-                ], JsonResponse::HTTP_CONFLICT);
+                    'status' => 'Conflit dans les données'
+                ], 409);
             }
-        }
 
-        // Mettre à jour les données de l'utilisateur
-        foreach ($requestData as $key => $value) {
-            switch ($key) {
-                case 'firstname':
-                    $user->setFirstname($value);
-                    break;
-                case 'lastname':
-                    $user->setLastname($value);
-                    break;
-                case 'tel':
-                    $user->setTel($value);
-                    break;
-                case 'sexe':
-                    $user->setSexe($value);
-                    break;
-                default:
-                    break;
+            // Mise à jour des données de l'utilisateur
+            if ($firstName !== null) {
+                $user->setFirstName($firstName);
             }
+            if ($lastName !== null) {
+                $user->setLastName($lastName);
+            }
+            if ($tel !== null) {
+                $user->setTel($tel);
+            }
+            if ($sexe !== null) {
+                $user->setSexe($sexe);
+            }
+
+            // Enregistrement des changements dans la base de données
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
+
+            // Réponse de succès
+            return new JsonResponse([
+                'error' => false,
+                'message' => 'Votre inscription a bien été prise en compte',
+                'status' => 'Succès'
+            ], 201);
+        } catch (\Exception $e) {
+            // Gestion des erreurs
+            return new JsonResponse([
+                'error' => 'Error: ' . $e->getMessage(),
+            ], JsonResponse::HTTP_NOT_FOUND);
         }
-
-        $user->setUpdateAt(new DateTimeImmutable());
-
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
-
-        return $this->json([
-            'error' => false,
-            'message' => 'Votre mise à jour a bien été prise en compte.',
-        ]);
     }
 }
