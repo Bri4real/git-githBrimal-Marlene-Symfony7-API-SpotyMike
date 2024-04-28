@@ -6,7 +6,6 @@ use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -14,150 +13,225 @@ use Symfony\Component\Uid\Uuid;
 use DateTimeImmutable;
 use DateTime;
 
+
 class RegistrationController extends AbstractController
 {
     private $entityManager;
     private $passwordHasher;
+    private $repository;
 
     public function __construct(EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher)
     {
         $this->entityManager = $entityManager;
         $this->passwordHasher = $passwordHasher;
+        $this->repository = $entityManager->getRepository(User::class);
     }
 
-    #[Route('/register', name: 'app_register', methods: ['POST'])]
-
-    public function register(Request $request): JsonResponse
+    #[Route('/register', name: 'app_create_user', methods: ['POST'])]
+    public function register(Request $request, UserPasswordHasherInterface $passwordHash): JsonResponse
     {
-        $requestData = $request->request->all();
+        $requestData = $this->parseRequestData($request);
 
-        $validationResult = $this->validateRegData($requestData);
-        if ($validationResult !== true) {
-            return $validationResult;
+        // Vérification des champs obligatoires
+        $missingFields = $this->checkRequiredFields($requestData);
+        if (!empty($missingFields)) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Des champs obligatoires sont manquants.',
+                'status' => 'Donnée manquante',
+                'missing_fields' => $missingFields,
+            ], 400);
         }
 
-        $user = $this->createUser($requestData);
+        // Vérification de l'existence de l'utilisateur avec l'email fourni
+        $existingUser = $this->repository->findOneBy(['email' => $requestData['email']]);
+        if ($existingUser) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Cet email est déjà utilisé par un autre compte.',
+                'status' => "Email dejà utilisé",
+            ], 409);
+        }
+
+
+        $dateBirth = $this->checkDateFormat($requestData['dateBirth']);
+        if (!$dateBirth) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Le format de la date de naissance est invalide. Le format attendu est JJ/MM/AAAA.',
+                'status' => "Format de date de naissance invalide"
+            ], 400);
+        }
+
+        $age = $this->checkAge($dateBirth);
+        if ($age < 12) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'L\'utilisateur doit avoir au moins 12 ans.',
+                'status' => "Age minimum non respecté"
+            ], 400);
+        }
+
+
+        $tel = $requestData['tel'] ?? null;
+        if ($tel !== null && !$this->checkPhoneNumber($tel)) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Le format du numéro de téléphone est invalide.',
+                'status' => "Format de téléphone invalide"
+            ], 400);
+        }
+
+
+        $password = $requestData['password'] ?? null;
+        if (!$this->checkPassword($password)) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Le mot de passe ne respecte pas les critères de sécurité.',
+                'status' => "Format de mot de passe invalide"
+            ], 400);
+        }
+
+        // Validation du format de l'email
+        $email = $requestData['email'] ?? null;
+        if (!$this->checkEmail($email)) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Le format de l\'email est invalide.',
+                'status' => 'Format d\'email invalide'
+            ], 400);
+        }
+
+        $sexe = $requestData['sexe'] ?? null;
+        if ($sexe !== null && ($sexe !== 0 && $sexe !== 1)) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'La valeur du champ sexe est invalide. Les valeurs autorisées sont 0 pour Femme, 1 pour Homme.',
+                'status' => "Valeur de sexe invalide"
+            ], 400);
+        }
+
+
+
+
+        $notValid = $this->checkName($requestData);
+        if (!empty($notValid)) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Le nom et le prénom doit obligatoirement être supérieur à 1 caractère et inférieur à 60 caractères.',
+                'status' => "Une ou plusieurs données sont erronées.",
+                'invalid_data' => $notValid
+            ],);
+        }
+
+        // Création de l'utilisateur
+        $user = new User();
+        $hashedPassword = $passwordHash->hashPassword($user, $password);
+        $currentTime = new DateTimeImmutable();
+
+        $user->setFirstname($requestData['firstname'])
+            ->setLastname($requestData['lastname'])
+            ->setEmail($email)
+            ->setSexe($sexe)
+            ->setPassword($hashedPassword)
+            ->setTel($tel)
+            ->setDateBirth($dateBirth)
+            ->setIsActive('Active')
+            ->setIdUser(Uuid::v1())
+            ->setCreatedAt($currentTime)
+            ->setUpdateAt($currentTime);
+
+
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        return new JsonResponse([
+        return $this->json([
             'error' => false,
-            'message' => 'L\'utilisateur a bien été créé avec succès',
-            'user' => $this->getUserData($user)
+            'message' => "L'utilisateur a bien été créé avec succès.",
+            'user' => $user->registerSerializer(),
         ], 201);
     }
 
-    private function validateRegData(array $data): JsonResponse|bool
+    private function parseRequestData(Request $request): array
+    {
+        $requestData = $request->request->all();
+
+        if ($request->headers->get('content-type') === 'application/json') {
+            $requestData = json_decode($request->getContent(), true);
+        }
+
+        return $requestData;
+    }
+
+    private function checkRequiredFields(array $requestData): array
     {
         $requiredFields = ['firstname', 'lastname', 'email', 'password', 'dateBirth'];
+        $missingFields = [];
+
         foreach ($requiredFields as $field) {
-            if (empty($data[$field])) {
-                return new JsonResponse([
-                    'error' => true,
-                    'message' => 'Des champs obligatoires sont manquants.',
-                    'status' => 'Donnée manquante'
-                ], 400);
+            if (!isset($requestData[$field])) {
+                $missingFields[] = $field;
             }
         }
 
-        if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => 'Le format de l\'e-mail est invalide',
-                'status' => 'Format d\'e-mail invalide'
-            ], 400);
-        }
-
-        if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,}$/', $data['password'])) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre, un caractère spécial, et avoir au moins 8 caractères',
-                'status' => 'Format de mot de passe invalide'
-            ], 400);
-        }
-
-        if (!DateTime::createFromFormat('d/m/Y', $data['dateBirth'])) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => 'Le format de la date de naissance est invalide. Le format attendu est JJ/MM/AAAA',
-                'status' => 'Format de date de naissance invalide'
-            ], 400);
-        }
-
-        $dateBirth = DateTime::createFromFormat('d/m/Y', $data['dateBirth']);
-        $now = new DateTime();
-        $age = $now->diff($dateBirth)->y;
-        if ($age < 12) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => "L'utilisateur doit avoir au moins 12 ans.",
-                'status' => 'Âge minimum non respecté (moins de 12 ans)'
-            ], 400);
-        }
-
-        if (!empty($data['tel']) && !preg_match('/^\d{10}$/', $data['tel'])) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => 'Le format du numéro de téléphone est invalide',
-                'status' => 'Format de téléphone invalide'
-            ], 400);
-        }
-
-        if (!empty($data['sexe']) && !in_array($data['sexe'], [0, 1])) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => 'La valeur du champ sexe est invalide. Les valeurs autorisées sont 0 pour femme, 1 pour homme',
-                'status' => 'Valeur de sexe invalide'
-            ], 400);
-        }
-
-        $existingUser = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $data['email']]);
-        if ($existingUser) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => 'Cet e-mail est déjà utilisé par un autre compte',
-                'status' => 'Email déjà utilisé'
-            ], 409);
-        }
-
-        return true;
+        return $missingFields;
     }
 
-    private function createUser(array $data): User
+    private function checkDateFormat(string $dateString): ?DateTimeImmutable
     {
-        $user = new User();
-        $user->setFirstname($data['firstname']);
-        $user->setLastname($data['lastname']);
-        $user->setEmail($data['email']);
-        $user->setPassword($this->passwordHasher->hashPassword($user, $data['password']));
-        $user->setDateBirth(DateTime::createFromFormat('d/m/Y', $data['dateBirth']));
-        $user->setCreatedAt(new DateTimeImmutable());
-        $user->setUpdateAt(new DateTimeImmutable());
-        $user->setIdUser(Uuid::v1());
-
-        if (!empty($data['tel'])) {
-            $user->setTel($data['tel']);
-        }
-
-        if (!empty($data['sexe'])) {
-            $user->setSexe((int)$data['sexe']);
-        }
-
-        return $user;
+        $dateBirth = DateTimeImmutable::createFromFormat('d/m/Y', $dateString);
+        return $dateBirth ? $dateBirth : null;
     }
 
-    private function getUserData(User $user): array
+    private function checkAge(DateTimeImmutable $dateBirth): int
     {
-        return [
-            'firstname' => $user->getFirstname(),
-            'lastname' => $user->getLastname(),
-            'email' => $user->getEmail(),
-            'tel' => $user->getTel(),
-            'sexe' => $user->getSexe(),
-            'dateBirth' => $user->getDateBirth()->format('d-m-Y'),
-            'createdAt' => $user->getCreatedAt()->format('Y-m-d'),
-            'updateAt' => $user->getUpdateAt() ? $user->getUpdateAt()->format('Y-m-d') : null,
-        ];
+        $today = new DateTime();
+        return $today->diff($dateBirth)->y;
+    }
+
+    private function checkPhoneNumber(?string $phoneNumber): bool
+    {
+        return preg_match('/^0[1-9][0-9]{8}$|^01[0-9]{8}$/', $phoneNumber);
+    }
+
+
+    private function checkPassword(?string $password): bool
+    {
+        $passRegex = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/';
+        return preg_match($passRegex, $password);
+    }
+
+    private function checkEmail(?string $email): bool
+    {
+        // Si l'email est null, il est considéré comme valide
+        if ($email === null) {
+            return true;
+        }
+
+        // Utilisation de filter_var pour valider l'email
+        return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+    }
+
+
+    private function checkName(array $requestData): array
+    {
+        $invalidData = [];
+
+        if (isset($requestData['firstname'])) {
+            $firstname = $requestData['firstname'];
+            if (!preg_match('/^[a-zA-Z\s]+$/', $firstname) || strlen($firstname) > 60 || strlen($firstname) < 1) {
+                $invalidData[] = 'firstname';
+            }
+        }
+
+        if (isset($requestData['lastname'])) {
+            $lastname = $requestData['lastname'];
+            if (!preg_match('/^[a-zA-Z\s]+$/', $lastname) || strlen($lastname) > 60 || strlen($lastname) < 1) {
+                $invalidData[] = 'lastname';
+            }
+        }
+
+        return $invalidData;
     }
 }

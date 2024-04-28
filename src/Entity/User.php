@@ -2,12 +2,12 @@
 
 namespace App\Entity;
 
+use App\Repository\UserRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use App\Repository\UserRepository;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -24,78 +24,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 55)]
     private ?string $firstname = null;
 
-
     #[ORM\Column(length: 55)]
     private ?string $lastname = null;
 
-    #[ORM\Column(length: 80, unique: true)]
+    #[ORM\Column(length: 80)]
     private ?string $email = null;
-
-    #[ORM\Column(length: 90)]
-    private ?string $encrypte = null;
 
     #[ORM\Column(length: 15, nullable: true)]
     private ?string $tel = null;
 
-    #[ORM\Column(type: "datetime", nullable: true)]
-    private ?\DateTimeInterface $dateBirth = null;
+    #[ORM\Column(length: 90)]
+    private ?string $encrypte = null;
 
-    #[ORM\Column(type: "integer", nullable: true)]
-    private ?int $sexe = null;
+    #[ORM\Column(length: 55, nullable: true)]
+    private ?string $sexe = null;
 
     #[ORM\Column(type: 'json')]
-    private array $roles = [];
+    private ?array $roles = [];
 
     #[ORM\Column(type: "boolean", nullable: true)]
     private ?bool $isActive = true;
 
-
-    public function setIsActive(bool $isActive): self
-    {
-        $this->isActive = $isActive;
-        return $this;
-    }
-
-    // Getter pour isActive
-    public function isActive(): bool
-    {
-        return $this->isActive;
-    }
-
-
-    // Getters et setters pour dateBirth
-    public function getDateBirth(): ?\DateTimeInterface
-    {
-        return $this->dateBirth;
-    }
-
-    public function setDateBirth(?\DateTimeInterface $dateBirth): static
-    {
-        $this->dateBirth = $dateBirth;
-
-        return $this;
-    }
-
-    // Getters et setters pour sexe
-    public function getSexe(): ?int
-    {
-        return $this->sexe;
-    }
-
-    public function setSexe(?int $sexe): self
-    {
-        $this->sexe = $sexe;
-
-        return $this;
-    }
-
-
-    public function setRoles(array $roles): self
-    {
-        $this->roles = $roles;
-
-        return $this;
-    }
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $dateBirth = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -106,10 +57,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'User_idUser', cascade: ['persist', 'remove'])]
     private ?Artist $artist = null;
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     public function getIdUser(): ?string
     {
@@ -134,6 +81,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
     public function getFirstname(): ?string
     {
         return $this->firstname;
@@ -146,11 +94,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getUsername(): ?string
-    {
-        return $this->email;
-    }
-
     public function getEmail(): ?string
     {
         return $this->email;
@@ -159,7 +102,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): static
     {
         $this->email = $email;
-
         return $this;
     }
 
@@ -175,15 +117,50 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getSexe(): ?string
+    {
+        return $this->sexe;
+    }
+
+
+    public function setSexe(?string $sexe): static
+    {
+        $this->sexe = $sexe;
+
+        return $this;
+    }
+
+    public function setIsActive(bool $isActive): self
+    {
+        $this->isActive = $isActive;
+        return $this;
+    }
+
+    public function getIsActive(): bool
+    {
+        return $this->isActive;
+    }
+    public function setTel(?string $tel): static
+    {
+        $this->tel = $tel;
+        return $this;
+    }
+
     public function getTel(): ?string
     {
         return $this->tel;
     }
 
-    public function setTel(?string $tel): static
+    public function getRoles(): array
     {
-        $this->tel = $tel;
+        // Retourne un tableau de chaînes de caractères représentant les rôles de l'utilisateur
+        return $this->roles;
+    }
 
+    public function setRoles(array $roles): self
+    {
+        // Utilise array_unique pour supprimer les doublons éventuels dans le tableau des rôles
+        $this->roles = array_unique($roles);
         return $this;
     }
 
@@ -211,26 +188,51 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getDateBirth(): ?\DateTimeInterface
+    {
+        return $this->dateBirth;
+    }
+
+    public function setDateBirth(?\DateTimeInterface $dateBirth): static
+    {
+        $this->dateBirth = $dateBirth;
+
+        return $this;
+    }
+    /**
+     * 
+     *
+     * @see UserInterface
+     */
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
+
+    public function getUsername(): string
+    {
+        return $this->getUserIdentifier();
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials(): void
+    {
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
+    }
+
+
+
     public function getArtist(): ?Artist
     {
         return $this->artist;
     }
 
-    public function getFormattedSexe(): ?string
-    {
-        $sexe = $this->getSexe();
-
-        if ($sexe === 0) {
-            return "Femme";
-        } elseif ($sexe === 1) {
-            return "Homme";
-        } else {
-            return null;
-        }
-    }
     public function setArtist(Artist $artist): static
     {
-        // set the owning side of the relation if necessary
+
         if ($artist->getUserIdUser() !== $this) {
             $artist->setUserIdUser($this);
         }
@@ -240,35 +242,39 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-
-
-    public function getRoles(): array
+    public function registerSerializer()
     {
-
-        return ['PUBLIC_ACCESS'];
-    }
-
-    public function eraseCredentials(): void
-    {
-    }
-
-    public function getUserIdentifier(): string
-    {
-        return $this->getEmail();
-    }
-
-    public function serializer()
-    {
+        $birthFormat = $this->getDateBirth() ? $this->getDateBirth()->format('Y-m-d') : null;
+        $sexe = $this->getSexe() === '1' ? 'Homme' : 'Femme';
         return [
-            "id" => $this->getId(),
-            "idUser" => $this->getIdUser(),
-            "firstname" => $this->getFirstName(),
-            "lastname" => $this->getLastName(),
-            "email" => $this->getEmail(),
-            "tel" => $this->getTel(),
-            "sexe" => $this->getSexe() === "0" ? "Femme" : ($this->getSexe() === "1" ? "Homme" : null),
-            "createAt" => $this->getCreatedAt(),
-            "artist" => $this->getArtist() ?  $this->getArtist()->serializer() : [],
+            'firstname' => $this->getFirstname(),
+            'lastname' => $this->getLastname(),
+            'email' => $this->getEmail(),
+            'tel' => $this->getTel(),
+            'sexe' =>  $sexe,
+            'dateBirth' => $birthFormat,
+            'createdAt' => $this->getCreatedAt() ? $this->getCreatedAt()->format('Y-m-d H:i:s') : null,
+            'updateAt' => $this->getUpdateAt() ? $this->getUpdateAt()->format('Y-m-d H:i:s') : null,
+        ];
+    }
+
+
+    public function loginSerializer(bool $incArtist = false)
+    {
+        $birthFormat = $this->getDateBirth() ? $this->getDateBirth()->format('d-m-Y') : null;
+        $artistData = $incArtist && $this->getArtist() !== null ? $this->getArtist()->artistSerializer() : [];
+
+        $sexe = $this->getSexe() === '1' ? 'Homme' : 'Femme';
+
+        return [
+            'firstname' => $this->getFirstname(),
+            'lastname' => $this->getLastname(),
+            'email' => $this->getEmail(),
+            'tel' => $this->getTel(),
+            'sexe' =>  $sexe,
+            'artist' => $artistData,
+            'dateBirth' => $birthFormat,
+            'createdAt' => $this->getCreatedAt(),
         ];
     }
 }

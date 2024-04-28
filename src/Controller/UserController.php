@@ -73,7 +73,7 @@ class UserController extends AbstractController
         // Vérifier si le numéro de téléphone est déjà utilisé
         if ($tel !== null) {
             $existingUser = $this->userRepository->findOneBy(['tel' => $tel]);
-            if ($existingUser && $existingUser->getId() !== $user->getId()) {
+            if ($existingUser && $existingUser->getIdUser() !== $user->getIdUser()) {
                 return $this->json([
                     'error' => true,
                     'message' => 'Conflit de données. Le numéro de téléphone est déjà utilisé par un autre utilisateur.',
