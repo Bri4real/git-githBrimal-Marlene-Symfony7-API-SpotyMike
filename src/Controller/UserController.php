@@ -150,7 +150,7 @@ class UserController extends AbstractController
             ], 401);
         }
 
-        if ($userData->getActive() === 'Inactive') {
+        if ($userData->getIsActive() === 'Inactive') {
             return $this->json([
                 'error' => true,
                 'message' => 'Le compte est déjà désactivé.',
@@ -160,13 +160,13 @@ class UserController extends AbstractController
 
         $user = $userData;
 
-        $user->setActive('Inactive');
+        $user->setIsActive('Inactive');
         $user->setUpdateAt(new DateTimeImmutable());
 
         // Deactivate associated artist profile if exists
         if ($user->getArtist()) {
             $artist = $user->getArtist();
-            $artist->setActive('Inactive');
+            $artist->setIsActive('Inactive');
             $this->entityManager->persist($artist);
         }
 

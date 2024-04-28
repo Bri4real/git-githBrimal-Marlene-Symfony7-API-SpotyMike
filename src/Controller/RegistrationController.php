@@ -135,7 +135,7 @@ class RegistrationController extends AbstractController
             ->setPassword($hashedPassword)
             ->setTel($tel)
             ->setDateBirth($dateBirth)
-            ->setActive('Actif')
+            ->setIsActive('Actif')
             ->setIdUser(Uuid::v1())
             ->setCreatedAt($currentTime)
             ->setUpdateAt($currentTime);

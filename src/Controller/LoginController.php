@@ -70,7 +70,7 @@ class LoginController extends AbstractController
         $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
 
         // Vérification de l'état du compte utilisateur
-        if ($user && $user->getActive() !== 'Actif') {
+        if ($user && $user->getIsActive() !== 'Actif') {
             return new JsonResponse([
                 'error' => true,
                 'message' => 'Le compte n\'est plus actif ou suspendu.',

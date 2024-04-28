@@ -25,7 +25,7 @@ class Artist
 
 
     #[ORM\Column(length: 90)]
-    private ?string $active = null;
+    private ?string $isactive = null;
 
     //createdAt
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -132,14 +132,14 @@ class Artist
         return $this;
     }
 
-    public function getActive(): ?string
+    public function getIsActive(): ?string
     {
-        return $this->active;
+        return $this->isactive;
     }
 
-    public function setActive(?string $active): static
+    public function setIsActive(?string $isactive): static
     {
-        $this->active = $active;
+        $this->isactive = $isactive;
 
         return $this;
     }

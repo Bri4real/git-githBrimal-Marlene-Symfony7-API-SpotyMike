@@ -43,7 +43,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?array $roles = [];
 
     #[ORM\Column(length: 30, nullable: true)]
-    private ?string $active = null;
+    private ?string $isactive = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $dateBirth = null;
@@ -133,13 +133,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
 
 
-    public function getActive(): ?string
+    public function getIsActive(): ?string
     {
-        return $this->active;
+        return $this->isactive;
     }
-    public function setActive(?string $active): static
+    public function setIsActive(?string $isactive): static
     {
-        $this->active = $active;
+        $this->isactive = $isactive;
         return $this;
     }
 
