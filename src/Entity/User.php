@@ -130,9 +130,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-
-
-
     public function getIsActive(): ?string
     {
         return $this->isactive;
@@ -209,12 +206,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        return $this->email;
     }
 
     public function getUsername(): string
     {
-        return $this->getUserIdentifier();
+        return $this->email;
     }
 
     /**

@@ -21,7 +21,8 @@ return [
     'get_songs' => [[], ['_controller' => 'App\\Controller\\SongController::getAll'], [], [['text', '/songs']], [], [], []],
     'update_song' => [['id'], ['_controller' => 'App\\Controller\\SongController::update'], [], [['variable', '/', '[^/]++', 'id', true], ['text', '/songs']], [], [], []],
     'delete_song' => [['id'], ['_controller' => 'App\\Controller\\SongController::delete'], [], [['variable', '/', '[^/]++', 'id', true], ['text', '/songs']], [], [], []],
-    'app_user_update' => [[], ['_controller' => 'App\\Controller\\UserController::updateUser'], [], [['text', '/user']], [], [], []],
+    'update_user' => [[], ['_controller' => 'App\\Controller\\UserController::updateUser'], [], [['text', '/user']], [], [], []],
+    'app_delete_user' => [[], ['_controller' => 'App\\Controller\\UserController::deleteUser'], [], [['text', '/account-deactivation']], [], [], []],
     'api_login_check' => [[], [], [], [['text', '/login_check']], [], [], []],
     'App\Controller\AlbumController::index' => [[], ['_controller' => 'App\\Controller\\AlbumController::index'], [], [['text', '/albums']], [], [], []],
     'App\Controller\ArtistController::index' => [[], ['_controller' => 'App\\Controller\\ArtistController::show'], [], [['text', '/albums']], [], [], []],
@@ -41,4 +42,5 @@ return [
     'App\Controller\SongController::update' => [['id'], ['_controller' => 'App\\Controller\\SongController::update'], [], [['variable', '/', '[^/]++', 'id', true], ['text', '/songs']], [], [], []],
     'App\Controller\SongController::delete' => [['id'], ['_controller' => 'App\\Controller\\SongController::delete'], [], [['variable', '/', '[^/]++', 'id', true], ['text', '/songs']], [], [], []],
     'App\Controller\UserController::updateUser' => [[], ['_controller' => 'App\\Controller\\UserController::updateUser'], [], [['text', '/user']], [], [], []],
+    'App\Controller\UserController::deleteUser' => [[], ['_controller' => 'App\\Controller\\UserController::deleteUser'], [], [['text', '/account-deactivation']], [], [], []],
 ];

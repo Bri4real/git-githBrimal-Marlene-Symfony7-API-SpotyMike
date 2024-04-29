@@ -206,7 +206,7 @@
     </parameter>
     <parameter key="twig.default_path">/Users/brimalmartin/ESIEA PROJECTS/git-githBrimal-Marlene-Symfony7-API-SpotyMike/templates</parameter>
     <parameter key="lexik_jwt_authentication.pass_phrase">%env(JWT_PASSPHRASE)%</parameter>
-    <parameter key="lexik_jwt_authentication.token_ttl">3600</parameter>
+    <parameter key="lexik_jwt_authentication.token_ttl">%env(JWT_TOKEN_TTL)%</parameter>
     <parameter key="lexik_jwt_authentication.clock_skew">0</parameter>
     <parameter key="lexik_jwt_authentication.user_identity_field">username</parameter>
     <parameter key="lexik_jwt_authentication.allow_no_expiration">false</parameter>
@@ -285,8 +285,8 @@
       <tag name="controller.service_arguments"/>
       <tag name="container.service_subscriber"/>
       <argument type="service" id="doctrine.orm.default_entity_manager"/>
-      <argument type="service" id="App\Services\JWTService"/>
       <argument type="service" id="App\Repository\UserRepository"/>
+      <argument type="service" id="App\Services\JWTService"/>
       <call method="setContainer">
         <argument type="service" id=".service_locator.jUv.zyj.App\Controller\UserController"/>
       </call>
@@ -4224,7 +4224,7 @@
       <argument type="service" id="lexik_jwt_authentication.key_loader.raw"/>
       <argument>openssl</argument>
       <argument>RS256</argument>
-      <argument>3600</argument>
+      <argument>%env(JWT_TOKEN_TTL)%</argument>
       <argument>0</argument>
       <deprecated package="lexik/jwt-authentication-bundle" version="2.5">The "%service_id%" is deprecated since version 2.5 and will be removed in 5.0, use "lexik_jwt_authentication.jws_provider.lcobucci" instead.</deprecated>
     </service>
@@ -4259,7 +4259,7 @@
       <argument type="service" id="lexik_jwt_authentication.key_loader.raw"/>
       <argument>openssl</argument>
       <argument>RS256</argument>
-      <argument>3600</argument>
+      <argument>%env(JWT_TOKEN_TTL)%</argument>
       <argument>0</argument>
       <argument>false</argument>
     </service>

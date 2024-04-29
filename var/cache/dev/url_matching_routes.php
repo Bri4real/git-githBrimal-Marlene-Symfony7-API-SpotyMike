@@ -22,7 +22,8 @@ return [
             [['_route' => 'create_song', '_controller' => 'App\\Controller\\SongController::create'], null, ['POST' => 0], null, false, false, null],
             [['_route' => 'get_songs', '_controller' => 'App\\Controller\\SongController::getAll'], null, ['GET' => 0], null, false, false, null],
         ],
-        '/user' => [[['_route' => 'app_user_update', '_controller' => 'App\\Controller\\UserController::updateUser'], null, ['POST' => 0], null, false, false, null]],
+        '/user' => [[['_route' => 'app_update_user', '_controller' => 'App\\Controller\\UserController::updateUser'], null, ['POST' => 0], null, false, false, null]],
+        '/account-deactivation' => [[['_route' => 'app_delete_user', '_controller' => 'App\\Controller\\UserController::deleteUser'], null, ['DELETE' => 0], null, false, false, null]],
         '/login_check' => [[['_route' => 'api_login_check'], null, null, null, false, false, null]],
     ],
     [ // $regexpList
