@@ -21,7 +21,7 @@ return [
     'get_songs' => [[], ['_controller' => 'App\\Controller\\SongController::getAll'], [], [['text', '/songs']], [], [], []],
     'update_song' => [['id'], ['_controller' => 'App\\Controller\\SongController::update'], [], [['variable', '/', '[^/]++', 'id', true], ['text', '/songs']], [], [], []],
     'delete_song' => [['id'], ['_controller' => 'App\\Controller\\SongController::delete'], [], [['variable', '/', '[^/]++', 'id', true], ['text', '/songs']], [], [], []],
-    'update_user' => [[], ['_controller' => 'App\\Controller\\UserController::updateUser'], [], [['text', '/user']], [], [], []],
+    'app_update_user' => [[], ['_controller' => 'App\\Controller\\UserController::updateUser'], [], [['text', '/user']], [], [], []],
     'app_delete_user' => [[], ['_controller' => 'App\\Controller\\UserController::deleteUser'], [], [['text', '/account-deactivation']], [], [], []],
     'api_login_check' => [[], [], [], [['text', '/login_check']], [], [], []],
     'App\Controller\AlbumController::index' => [[], ['_controller' => 'App\\Controller\\AlbumController::index'], [], [['text', '/albums']], [], [], []],

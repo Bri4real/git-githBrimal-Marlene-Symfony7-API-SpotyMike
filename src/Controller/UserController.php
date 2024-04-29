@@ -39,7 +39,7 @@ class UserController extends AbstractController
             return $this->json([
                 'error' => true,
                 'message' => 'Authentification requise. Vous devez être connecté pour effectuer cette action.',
-            ], JsonResponse::HTTP_UNAUTHORIZED);
+            ], 401);
         }
 
         try {
@@ -114,10 +114,10 @@ class UserController extends AbstractController
 
             // Mise à jour des données de l'utilisateur
             if ($firstname !== null) {
-                $user->setFirstName($firstname);
+                $user->setFirstname($firstname);
             }
             if ($lastname !== null) {
-                $user->setLastName($lastname);
+                $user->setLastname($lastname);
             }
             if ($tel !== null) {
                 $user->setTel($tel);
