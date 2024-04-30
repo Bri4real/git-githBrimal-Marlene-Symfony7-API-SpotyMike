@@ -39,7 +39,6 @@ class RegistrationController extends AbstractController
                 'error' => true,
                 'message' => 'Des champs obligatoires sont manquants.',
                 'status' => 'Donnée manquante',
-                'missing_fields' => $missingFields,
             ], 400);
         }
 
@@ -162,18 +161,15 @@ class RegistrationController extends AbstractController
         return $requestData;
     }
 
-    private function checkRequiredFields(array $requestData): array
+    private function checkRequiredFields(array $requestData): void
     {
         $requiredFields = ['firstname', 'lastname', 'email', 'password', 'dateBirth'];
-        $missingFields = [];
+
 
         foreach ($requiredFields as $field) {
             if (!isset($requestData[$field])) {
-                $missingFields[] = $field;
             }
         }
-
-        return $missingFields;
     }
 
     private function checkDateFormat(string $dateString): ?DateTimeImmutable
@@ -211,24 +207,20 @@ class RegistrationController extends AbstractController
     }
 
 
-    private function checkName(array $requestData): array
+    private function checkName(array $requestData): void
     {
-        $invalidData = [];
+
 
         if (isset($requestData['firstname'])) {
             $firstname = $requestData['firstname'];
             if (!preg_match('/^[a-zA-Z\s]+$/', $firstname) || strlen($firstname) > 60 || strlen($firstname) < 1) {
-                $invalidData[] = 'firstname';
             }
         }
 
         if (isset($requestData['lastname'])) {
             $lastname = $requestData['lastname'];
             if (!preg_match('/^[a-zA-Z\s]+$/', $lastname) || strlen($lastname) > 60 || strlen($lastname) < 1) {
-                $invalidData[] = 'lastname';
             }
         }
-
-        return $invalidData;
     }
 }

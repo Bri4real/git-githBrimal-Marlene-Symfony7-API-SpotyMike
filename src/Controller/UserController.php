@@ -114,10 +114,10 @@ class UserController extends AbstractController
 
             // Mise à jour des données de l'utilisateur
             if ($firstname !== null) {
-                $user->setFirstname($firstname);
+                $user->setFirstName($firstname);
             }
             if ($lastname !== null) {
-                $user->setLastname($lastname);
+                $user->setLastName($lastname);
             }
             if ($tel !== null) {
                 $user->setTel($tel);
