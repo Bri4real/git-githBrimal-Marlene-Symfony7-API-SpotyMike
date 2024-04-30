@@ -6,6 +6,8 @@ use App\Repository\LabelRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
+
 
 #[ORM\Entity(repositoryClass: LabelRepository::class)]
 class Label
@@ -39,11 +41,15 @@ class Label
         return $this->idLabel;
     }
 
-    public function setIdLabel(string $idLabel): static
+    public function setIdLabel(?string $idLabel): string
     {
-        $this->idLabel = $idLabel;
-
-        return $this;
+        if ($idLabel !== null) {
+            $this->idLabel = $idLabel;
+        } else {
+            $uuid = Uuid::v4();
+            $this->idLabel = 'spotimike:label:' . $uuid;
+        }
+        return $this->idLabel;
     }
 
     public function getLabelName(): ?string

@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: AlbumRepository::class)]
 class Album
@@ -59,12 +60,17 @@ class Album
         return $this->idAlbum;
     }
 
-    public function setIdAlbum(string $idAlbum): static
+    public function setIdAlbum(?string $idAlbum): string
     {
-        $this->idAlbum = $idAlbum;
-
-        return $this;
+        if ($idAlbum !== null) {
+            $this->idAlbum = $idAlbum;
+        } else {
+            $uuid = Uuid::v4();
+            $this->idAlbum = 'spotify:album:' . $uuid;
+        }
+        return $this->idAlbum;
     }
+
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;

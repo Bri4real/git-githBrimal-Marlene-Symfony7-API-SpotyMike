@@ -6,6 +6,7 @@ use App\Repository\FeaturingRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: FeaturingRepository::class)]
 class Featuring
@@ -40,11 +41,15 @@ class Featuring
         return $this->idFeaturing;
     }
 
-    public function setIdFeaturing(string $idFeaturing): static
+    public function setIdFeaturing(?string $idFeaturing): string
     {
-        $this->idFeaturing = $idFeaturing;
-
-        return $this;
+        if ($idFeaturing !== null) {
+            $this->idFeaturing = $idFeaturing;
+        } else {
+            $uuid = Uuid::v4();
+            $this->idFeaturing = 'spotimike:feat:' . $uuid;
+        }
+        return $this->idFeaturing;
     }
 
     public function getIdSong(): ?Song
@@ -91,11 +96,11 @@ class Featuring
 
         $artists = [];
         foreach ($this->getIdArtist() as $artist) {
-            $artists[] = $artist->artistSerializer();
+            $artists[] = $artist();
         }
 
 
-        $artistOfSong = $this->getIdSong()->getAlbum()->getArtistUserIdUser()->artistSerializer();
+        $artistOfSong = $this->getIdSong()->getAlbum()->getArtistUserIdUser();
         return [
             'id' => $this->getIdSong()->getId(),
             'title' => $this->getIdSong()->getTitle(),
