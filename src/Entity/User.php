@@ -244,7 +244,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function registerSerializer()
     {
-        $birthFormat = $this->getDateBirth() ? $this->getDateBirth()->format('Y-m-d') : null;
+        $date = $this->getDateBirth() ? $this->getDateBirth()->format('Y-m-d') : null;
         $sexe = $this->getSexe() === '1' ? 'Homme' : 'Femme';
         return [
             'firstname' => $this->getFirstname(),
@@ -252,7 +252,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             'email' => $this->getEmail(),
             'tel' => $this->getTel(),
             'sexe' =>  $sexe,
-            'dateBirth' => $birthFormat,
+            'dateBirth' => $date,
             'createdAt' => $this->getCreatedAt() ? $this->getCreatedAt()->format('Y-m-d H:i:s') : null,
             'updateAt' => $this->getUpdateAt() ? $this->getUpdateAt()->format('Y-m-d H:i:s') : null,
         ];
@@ -261,10 +261,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function loginSerializer(bool $incArtist = false)
     {
-        $birthFormat = $this->getDateBirth() ? $this->getDateBirth()->format('d-m-Y') : null;
-        $artistData = $incArtist && $this->getArtist() !== null ? $this->getArtist()->artistSerializer() : [];
+        $date = $this->getDateBirth() ? $this->getDateBirth()->format('d-m-Y') : null;
+        $artistData = $incArtist && $this->getArtist() !== null ? $this->getArtist() : [];
 
-        $sexe = $this->getSexe() === '1' ? 'Homme' : 'Femme';
+        $sexe = $this->getSexe() == '0' ? 'Femme' : 'Homme';
 
         return [
             'firstname' => $this->getFirstname(),
@@ -273,7 +273,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             'tel' => $this->getTel(),
             'sexe' =>  $sexe,
             'artist' => $artistData,
-            'dateBirth' => $birthFormat,
+            'dateBirth' => $date,
             'createdAt' => $this->getCreatedAt(),
         ];
     }
