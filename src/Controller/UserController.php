@@ -30,18 +30,18 @@ class UserController extends AbstractController
     {
 
         $tokenData = $this->jwtService->checkToken($request);
-        if (gettype($tokenData) == 'boolean') {
-            return $this->json($this->jwtService->sendJsonErrorToken($tokenData));
+        if (is_bool($tokenData)) {
+            return new JsonResponse($this->jwtService->sendJsonErrorToken($tokenData));
         }
 
 
         if (!$tokenData) {
-            return $this->json([
+            return new JsonResponse([
                 'error' => true,
                 'message' => 'Authentification requise. Vous devez être connecté pour effectuer cette action.',
+                'status' => 'Non authentifié'
             ], 401);
         }
-
         try {
             // Récupération de l'utilisateur courant
             $currentUser = $this->getUser()->getUserIdentifier();

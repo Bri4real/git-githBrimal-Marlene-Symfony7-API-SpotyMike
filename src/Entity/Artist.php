@@ -176,8 +176,6 @@ class Artist
         return $this->songs;
     }
 
-
-
     /**
      * @return Collection<int, Album>
      */

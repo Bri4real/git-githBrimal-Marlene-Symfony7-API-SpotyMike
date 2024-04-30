@@ -42,6 +42,17 @@ class RegistrationController extends AbstractController
             ], 400);
         }
 
+        // Validation du format de l'email
+        $email = $requestData['email'] ?? null;
+        if (!$this->checkEmail($email)) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Le format de l\'email est invalide.',
+                'status' => 'Format d\'email invalide'
+            ], 400);
+        }
+
+
         // Vérification de l'existence de l'utilisateur avec l'email fourni
         $existingUser = $this->repository->findOneBy(['email' => $requestData['email']]);
         if ($existingUser) {
@@ -91,18 +102,9 @@ class RegistrationController extends AbstractController
             ], 400);
         }
 
-        // Validation du format de l'email
-        $email = $requestData['email'] ?? null;
-        if (!$this->checkEmail($email)) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => 'Le format de l\'email est invalide.',
-                'status' => 'Format d\'email invalide'
-            ], 400);
-        }
 
         $sexe = $requestData['sexe'] ?? null;
-        if ($sexe !== null && ($sexe !== 0 && $sexe !== 1)) {
+        if ($sexe !== null && ($sexe !== "0" && $sexe !== "1")) {
             return new JsonResponse([
                 'error' => true,
                 'message' => 'La valeur du champ sexe est invalide. Les valeurs autorisées sont 0 pour Femme, 1 pour Homme.',
@@ -110,16 +112,12 @@ class RegistrationController extends AbstractController
             ], 400);
         }
 
-
-
-
         $notValid = $this->checkName($requestData);
         if (!empty($notValid)) {
             return new JsonResponse([
                 'error' => true,
                 'message' => 'Le nom et le prénom doit obligatoirement être supérieur à 1 caractère et inférieur à 60 caractères.',
                 'status' => "Une ou plusieurs données sont erronées.",
-                'invalid_data' => $notValid
             ],);
         }
 
@@ -161,15 +159,26 @@ class RegistrationController extends AbstractController
         return $requestData;
     }
 
-    private function checkRequiredFields(array $requestData): void
+    private function checkRequiredFields(array $requestData): ?JsonResponse
     {
-        $requiredFields = ['firstname', 'lastname', 'email', 'password', 'dateBirth'];
 
+        $requiredFields = ['firstname', 'lastname', 'email', 'password', 'dateBirth'];
+        $missingFields = [];
 
         foreach ($requiredFields as $field) {
             if (!isset($requestData[$field])) {
+                $missingFields[] = $field;
             }
         }
+
+        if (!empty($missingFields)) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Des champs obligatoires sont manquants.',
+                'status' => 'Donnée manquante'
+            ], 400);
+        }
+        return null;
     }
 
     private function checkDateFormat(string $dateString): ?DateTimeImmutable

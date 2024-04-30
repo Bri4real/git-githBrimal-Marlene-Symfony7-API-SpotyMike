@@ -66,7 +66,7 @@ class Album
             $this->idAlbum = $idAlbum;
         } else {
             $uuid = Uuid::v4();
-            $this->idAlbum = 'spotify:album:' . $uuid;
+            $this->idAlbum = 'spotimike:album:' . $uuid;
         }
         return $this->idAlbum;
     }
