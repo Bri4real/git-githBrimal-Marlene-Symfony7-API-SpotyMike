@@ -45,7 +45,7 @@ class LoginController extends AbstractController
             ], 400);
         }
 
-        $email = $request->request->get('email'); // Correction de la variable
+        $email = $request->request->get('email');
         if (!$this->checkEmail($email)) {
             return new JsonResponse([
                 'error' => true,

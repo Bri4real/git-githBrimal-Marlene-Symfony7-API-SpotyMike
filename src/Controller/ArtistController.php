@@ -14,21 +14,79 @@ use DateTime;
 use App\Entity\Label;
 use App\Entity\LabelHasArtist;
 use DateTimeImmutable;
-use PhpParser\Node\Stmt\Return_;
+use Lcobucci\JWT\Validation\Validator;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 class ArtistController extends AbstractController
 {
     private $repository;
     private $entityManager;
     private $jwtService;
+    private $validator;
 
-    public function __construct(EntityManagerInterface $entityManager, JWTService $jwtService)
+    public function __construct(EntityManagerInterface $entityManager, JWTService $jwtService, ValidatorInterface $validator)
     {
         $this->jwtService = $jwtService;
         $this->entityManager = $entityManager;
+        $this->validator = $validator;
         $this->repository = $entityManager->getRepository(Artist::class);
     }
 
+
+
+    #[Route('/artist/{fullname}', name: "app_get_artist_by_fullname", methods: ["GET"])]
+
+    public function getArtistByFullname(Request $request, string $fullname): JsonResponse
+    {
+        // Valider le token
+        $user = $this->getUser();
+        if (!$user) {
+            throw new JsonResponse([
+                'error' => true,
+                'message' => 'Authentification requise. Vous devez être connecté pour effectuer cette action.',
+                'status' => 'Non authentifié'
+            ], 401);
+        }
+
+        // Valider le nom d'artiste
+        $errors = $this->validator->validate($fullname, [
+            new Assert\NotBlank(['message' => 'Le nom d\'artiste est obligatoire pour cette requête.']),
+            new Assert\Regex([
+                'pattern' => '/^[a-zA-Z0-9\s\p{P}]{1,30}$/',
+                'message' => 'Le format du nom d\'artiste fourni est invalide.',
+            ]),
+        ]);
+
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[] = $error->getMessage();
+            }
+
+            return $this->json([
+                'error' => true,
+                'message' => $errorMessages,
+            ], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Rechercher l'artiste
+        $artist = $this->entityManager->getRepository(Artist::class)->findOneBy(['fullname' => $fullname]);
+        if (!$artist) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Aucun artiste trouvé correspondant au nom fourni.',
+            ], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+
+        $currentArtist = $artist->getArtistInfo();
+
+        return new JsonResponse([
+            'error' => false,
+            'artist' => $currentArtist,
+        ]);
+    }
 
     // I have to work on it cause Marlene ain't doing it .
     #[Route('/artist', name: 'app_create_update_artist', methods: ['POST'])]
@@ -276,7 +334,7 @@ class ArtistController extends AbstractController
         return new JsonResponse([
             'success' => true,
             'message' => 'Votre compte artiste a été créé avec succès. Bienvenue dans notre communauté d\'artistes !',
-            'id_artist' => strval($artist->getUserIdUser()),
+            'id_artist' => $artist->getUserIdUser(),
         ], 201);
     }
 
@@ -293,7 +351,8 @@ class ArtistController extends AbstractController
         if (!$tokenData) {
             return $this->json([
                 'error' => true,
-                'message' => 'Authentification requise. Vous devez être connecté pour effectuer cette action.'
+                'message' => 'Authentification requise. Vous devez être connecté pour effectuer cette action.',
+                'status' => 'Non authentifié'
             ], 401);
         }
 
@@ -323,7 +382,6 @@ class ArtistController extends AbstractController
                 'status' => 'Aucun artiste trouvé',
             ], 404);
         }
-
 
         $AllArtists = array_map(fn ($artist) => $artist->getAllArtistsInfo(), $paginatedArtists);
         $totalArtists = count($artists);
