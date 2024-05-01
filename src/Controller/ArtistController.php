@@ -279,6 +279,69 @@ class ArtistController extends AbstractController
             'id_artist' => strval($artist->getUserIdUser()),
         ], 201);
     }
+
+    #[Route('/artist', name: 'app_get_artists', methods: ['GET'])]
+    public function getAllArtists(Request $request): JsonResponse
+    {
+
+        $tokenData = $this->jwtService->checkToken($request);
+
+        if (is_bool($tokenData)) {
+            return $this->json($this->jwtService->sendJsonErrorToken($tokenData));
+        }
+
+        if (!$tokenData) {
+            return $this->json([
+                'error' => true,
+                'message' => 'Authentification requise. Vous devez être connecté pour effectuer cette action.'
+            ], 401);
+        }
+
+
+        $artists = $this->entityManager->getRepository(Artist::class)->findAll();
+
+
+        $limit = max(1, min(100, $request->query->getInt('limit', 5)));
+        $page = max(1, $request->query->getInt('page', 1));
+
+        if (!is_numeric($page) || $page <= 0) {
+            return $this->json([
+                'error' => true,
+                'message' => 'Le paramètre de pagination est invalide. Veuillez fournir un numéro de page valide.',
+                'status' => 'Paramètre de pagination invalide'
+            ], 400);
+        }
+
+        $offset = ($page - 1) * $limit;
+        $paginatedArtists = array_slice($artists, $offset, $limit);
+
+
+        if (empty($paginatedArtists)) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Aucun artiste trouvé pour la page demandée.',
+                'status' => 'Aucun artiste trouvé',
+            ], 404);
+        }
+
+
+        $AllArtists = array_map(fn ($artist) => $artist->getAllArtistsInfo(), $paginatedArtists);
+        $totalArtists = count($artists);
+
+        return new JsonResponse([
+            'error' => false,
+            'artists' => $AllArtists,
+            'message' => 'Informations des artistes récupérées avec succès.',
+            'status' => 'Success',
+            'pagination' => [
+                'currentPage' => $page,
+                'totalPages' => ceil($totalArtists / $limit),
+                'totalArtists' => $totalArtists
+            ]
+        ], 200);
+    }
+
+
     #[Route('/artist', name: 'app_delete_artist', methods: ['DELETE'])]
     public function delete(Request $request)
     {
