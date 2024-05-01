@@ -14,6 +14,7 @@ use DateTime;
 use App\Entity\Label;
 use App\Entity\LabelHasArtist;
 use DateTimeImmutable;
+use PhpParser\Node\Stmt\Return_;
 
 class ArtistController extends AbstractController
 {
@@ -277,5 +278,54 @@ class ArtistController extends AbstractController
             'message' => 'Votre compte artiste a été créé avec succès. Bienvenue dans notre communauté d\'artistes !',
             'id_artist' => strval($artist->getUserIdUser()),
         ], 201);
+    }
+    #[Route('/artist', name: 'app_delete_artist', methods: ['DELETE'])]
+    public function delete(Request $request)
+    {
+        $tokenData = $this->jwtService->checkToken($request);
+        if (is_bool($tokenData)) {
+            return new JsonResponse($this->jwtService->sendJsonErrorToken($tokenData));
+        }
+
+        if (!$tokenData) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Authentication requise. Vous devez être connecté pour effectuer cette action.',
+            ], 401);
+        }
+
+        $user = $tokenData;
+
+        if (!$user) {
+            return new JsonResponse([
+                'message' => 'Utiliateur non trouvé',
+            ], 404);
+        }
+        if ($user->getArtist() === null) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Compte artiste non trouvé. Veuillez vérifier les informations fournies et réessayez.',
+                'status'  => 'Artiste non trouvé'
+            ], 404);
+        }
+
+        if ($user->getArtist()->getIsActive() ===  'INACTIVE') {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Ce compte artiste est déjà désactivé.',
+                'status'  => 'Artistedéjà désactivé'
+            ], 410);
+        }
+
+        $artist = $user->getArtist();
+        $artist->setIsActive('INACTIVE');
+
+        $this->entityManager->persist($artist);
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'error' => false,
+            'message' => 'Le compte a été désactivé avec succès',
+        ], 200);
     }
 }
