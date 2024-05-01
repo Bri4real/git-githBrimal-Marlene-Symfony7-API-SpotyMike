@@ -31,8 +31,8 @@ class ArtistController extends AbstractController
 
 
     // I have to work on it cause Marlene ain't doing it .
-    #[Route('/artist', name: 'app_create_artist', methods: ['POST'])]
-    public function createArtist(Request $request): JsonResponse
+    #[Route('/artist', name: 'app_create_update_artist', methods: ['POST'])]
+    public function create_update_artist(Request $request): JsonResponse
     {
         $tokenData = $this->checkUser($request);
 
@@ -95,7 +95,6 @@ class ArtistController extends AbstractController
 
     private function updateArtist($user, $requestData)
     {
-        // Validation des données pour la mise à jour
         $invalidData = [];
         $invalidIdLabel = false;
 
@@ -123,7 +122,8 @@ class ArtistController extends AbstractController
             return new JsonResponse([
                 'error' => true,
                 'message' => 'Les paramètres fournis sont invalides. Veuillez vérifier les données soumises.',
-            ],);
+                'status' => 'Paramètres invalides',
+            ], 400);
         }
 
         if ($invalidIdLabel) {
@@ -182,7 +182,7 @@ class ArtistController extends AbstractController
         return $this->json([
             'success' => true,
             'message' => 'Les informations de l\'artiste ont été mises à jour avec succès.',
-        ], JsonResponse::HTTP_CREATED);
+        ], 200);
     }
 
     private function createNewArtist($user, $requestData)
@@ -313,7 +313,7 @@ class ArtistController extends AbstractController
             return new JsonResponse([
                 'error' => true,
                 'message' => 'Ce compte artiste est déjà désactivé.',
-                'status'  => 'Artistedéjà désactivé'
+                'status'  => 'Artiste déjà désactivé'
             ], 410);
         }
 
