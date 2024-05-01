@@ -8,16 +8,12 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Services\JWTService;
 use DateTime;
-use DateInterval;
 use App\Entity\Label;
 use App\Entity\LabelHasArtist;
 use DateTimeImmutable;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Validator\Constraints\Length;
 
 class ArtistController extends AbstractController
 {
@@ -244,8 +240,7 @@ class ArtistController extends AbstractController
             ], 400);
         }
 
-        // Vérification de l'âge de l'utilisateur
-        // ...
+
         $labelId = $requestData['label'];
         $label = $this->entityManager->getRepository(Label::class)->findOneBy(['idLabel' => $labelId]);
 
