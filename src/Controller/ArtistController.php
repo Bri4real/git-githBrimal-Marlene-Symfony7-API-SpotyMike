@@ -63,6 +63,14 @@ class ArtistController extends AbstractController
         if (!$user) {
             return new JsonResponse(['message' => 'User non trouvé'], 404);
         }
+        $age = $user->getDateBirth()->diff(new DateTime())->y;
+        if ($age < 16) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Vous devez avoir au moins 16 ans pour être artiste.',
+                'status' => 'User non éligible pour être artiste. '
+            ], 400);
+        }
 
         $requestData = $this->extractRequestData($request);
 
@@ -117,6 +125,11 @@ class ArtistController extends AbstractController
             $duplicateArtiste = $this->repository->findOneBy(['fullname' => $requestData['fullname']]);
             if ($duplicateArtiste && $duplicateArtiste->getId() !== $user->getArtist()->getId()) { //gotta come back to check this 
                 $invalidData[] = 'fullname';
+                return new JsonResponse([
+                    'error' => true,
+                    'message' => 'Ce nom d\'artiste est déjà pris. Veuillez choisir un autre.',
+                    'status' => 'Nom d\'artiste déjà utilisé'
+                ], 409);
             }
         }
 
@@ -217,11 +230,15 @@ class ArtistController extends AbstractController
             if (strlen($fullname) < 1 || strlen($fullname) > 30) {
                 $invalidData[] = 'fullname';
             }
-            $existingArtistWithFullname = $this->repository->findOneBy(['fullname' => $requestData['fullname']]);
-            if ($existingArtistWithFullname) {
-                $invalidData[] = 'fullname';
+            $duplicateArtiste = $this->repository->findOneBy(['fullname' => $fullname]);
+            if ($duplicateArtiste) {
+                return new JsonResponse([
+                    'error' => true,
+                    'message' => 'Ce nom d\'utilisateur est déjà pris. Veuillez choisir un autre.',
+                ], 400);
             }
         }
+
 
         if (isset($requestData['label']) && strlen($requestData['label']) > 60) {
             $invalidIdLabel = true;
@@ -250,7 +267,7 @@ class ArtistController extends AbstractController
         if (!$label) {
             return new JsonResponse([
                 'error' => true,
-                'message' => 'Invalid label provided',
+                'message' => 'Label Fourni Invalide ',
             ], JsonResponse::HTTP_BAD_REQUEST);
         }
 
@@ -279,7 +296,7 @@ class ArtistController extends AbstractController
         return $this->json([
             'success' => true,
             'message' => 'Votre compte artiste a été créé avec succès. Bienvenue dans notre communauté d\'artistes !',
-            'id_artist' => strval($artist->getId()),
+            'id_artist' => strval($artist->getUserIdUser()),
         ], JsonResponse::HTTP_CREATED);
     }
 }
