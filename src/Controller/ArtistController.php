@@ -271,7 +271,6 @@ class ArtistController extends AbstractController
         $labelHasArtist->setLeftAt(null);
 
         if (isset($requestData['avatar'])) {
-            // Logic for updating avatar
         }
 
         $this->entityManager->persist($labelHasArtist);
