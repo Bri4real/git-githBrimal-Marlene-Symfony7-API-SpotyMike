@@ -32,22 +32,7 @@ class ArtistController extends AbstractController
         $this->repository = $entityManager->getRepository(Artist::class);
     }
 
-    #[Route('/albums', name: 'artist_index', methods: 'GET')]
-    public function index(): JsonResponse
-    {
-        // Récupère tous les artistes depuis la base de données
-        $artists = $$this->repository->findAll();
 
-        // Retourne les artistes sous forme de JSON
-        return $this->json($artists);
-    }
-
-    #[Route('/albums', name: 'artist_index', methods: 'GET')]
-    public function show(Artist $artist): JsonResponse
-    {
-        // Retourne les détails d'un artiste spécifique sous forme de JSON
-        return new JsonResponse($artist);
-    }
     // I have to work on it cause Marlene ain't doing it .
     #[Route('/artist', name: 'app_create_artist', methods: ['POST'])]
     public function createArtist(Request $request): JsonResponse
@@ -293,10 +278,10 @@ class ArtistController extends AbstractController
         $this->entityManager->persist($artist);
         $this->entityManager->flush();
 
-        return $this->json([
+        return new JsonResponse([
             'success' => true,
             'message' => 'Votre compte artiste a été créé avec succès. Bienvenue dans notre communauté d\'artistes !',
             'id_artist' => strval($artist->getUserIdUser()),
-        ], JsonResponse::HTTP_CREATED);
+        ], 201);
     }
 }
