@@ -11,10 +11,8 @@ return [
         '/albums' => [
             [['_route' => 'album_index', '_controller' => 'App\\Controller\\AlbumController::index'], null, ['GET' => 0], null, false, false, null],
             [['_route' => 'artist_index', '_controller' => 'App\\Controller\\ArtistController::show'], null, ['GET' => 0], null, false, false, null],
-            [['_route' => 'artist_update', '_controller' => 'App\\Controller\\ArtistController::update'], null, ['PUT' => 0], null, false, false, null],
-            [['_route' => 'artist_delete', '_controller' => 'App\\Controller\\ArtistController::delete'], null, ['DELETE' => 0], null, false, false, null],
         ],
-        '/artist' => [[['_route' => 'create_artist', '_controller' => 'App\\Controller\\ArtistController::newArtist'], null, ['POST' => 0], null, false, false, null]],
+        '/artist' => [[['_route' => 'app_create_artist', '_controller' => 'App\\Controller\\ArtistController::createArtist'], null, ['POST' => 0], null, false, false, null]],
         '/label' => [[['_route' => 'app_create_label', '_controller' => 'App\\Controller\\LabelController::createLabel'], null, ['POST' => 0], null, false, false, null]],
         '/login' => [[['_route' => 'app_login', '_controller' => 'App\\Controller\\LoginController::login'], null, ['POST' => 0], null, false, false, null]],
         '/register' => [[['_route' => 'app_create_user', '_controller' => 'App\\Controller\\RegistrationController::register'], null, ['POST' => 0], null, false, false, null]],
