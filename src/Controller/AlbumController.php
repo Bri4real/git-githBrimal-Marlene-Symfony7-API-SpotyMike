@@ -103,7 +103,7 @@ class AlbumController extends AbstractController
     }
 
     #[Route('/albums', name: 'app_get_all_albums', methods: ['GET'])]
-    public function getAllAlbums(Request $request): JsonResponse
+    public function AllAlbums(Request $request): JsonResponse
     {
 
         $tokenData = $this->jwtService->checkToken($request);
