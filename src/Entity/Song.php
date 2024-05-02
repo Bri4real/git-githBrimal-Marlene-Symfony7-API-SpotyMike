@@ -6,6 +6,7 @@ use App\Repository\SongRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: SongRepository::class)]
 class Song
@@ -57,12 +58,19 @@ class Song
         return $this->idSong;
     }
 
-    public function setIdSong(string $idSong): static
-    {
-        $this->idSong = $idSong;
 
-        return $this;
+    public function setIdSong(?string $idSong): string
+    {
+        if ($idSong !== null) {
+            $this->idSong = $idSong;
+        } else {
+            $uuid = Uuid::v4();
+            $this->idSong = 'spotimike:song:' . $uuid;
+        }
+        return $this->idSong;
     }
+
+
 
     public function getTitle(): ?string
     {

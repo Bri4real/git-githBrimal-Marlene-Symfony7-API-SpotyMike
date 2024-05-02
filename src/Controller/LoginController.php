@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Psr\Cache\CacheItemPoolInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 class LoginController extends AbstractController
 {
@@ -18,10 +19,12 @@ class LoginController extends AbstractController
     private $passwordHasher;
     private $cache;
     private $JWTManager;
+    private $repo;
 
     public function __construct(EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher, CacheItemPoolInterface $cache, JWTTokenManagerInterface $JWTManager)
     {
         $this->entityManager = $entityManager;
+        $this->repo = $entityManager->getRepository(User::class);
         $this->passwordHasher = $passwordHasher;
         $this->cache = $cache;
         $this->JWTManager = $JWTManager;
@@ -37,18 +40,18 @@ class LoginController extends AbstractController
         if (!$email || !$password) {
             return new JsonResponse([
                 'error' => true,
-                'message' => 'Email / password manquant',
+                'message' => 'Email/password manquants.',
                 'status' => 'Donnée manquante',
-                'code' => 400
-            ]);
+            ], 400);
         }
 
-        // Récupération de l'utilisateur par email
-        $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
-
-        // Vérification de l'utilisateur
-        if (!$user) {
-            return $this->handleLoginFailure($email);
+        $email = $request->request->get('email');
+        if (!$this->checkEmail($email)) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Le format de l\'email est invalide.',
+                'status' => 'Format d\'email invalide'
+            ], 400);
         }
 
         // Vérification du format du mot de passe
@@ -57,104 +60,87 @@ class LoginController extends AbstractController
                 'error' => true,
                 'message' => 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial et doit avoir au moins 8 caractères.',
                 'status' => 'Le mot de passe ne respecte pas les critères',
-                'code' => 400
-            ]);
+            ], 400);
         }
 
-        // Vérification de l'existence de l'utilisateur
-        if (!$user->isActive()) {
+        // Gestion des tentatives de connexion
+        $this->handleLoginAttempts($email);
+
+        // Récupération de l'utilisateur
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+
+        // Vérification de l'état du compte utilisateur
+        if ($user && $user->getIsActive() !== 'ACTIVE') {
             return new JsonResponse([
                 'error' => true,
-                'message' => 'Le compte n’est plus actif ou suspendu',
-                'status' => 'Compte non actif ou suspendu',
-                'code' => 403
-            ]);
+                'message' => 'Le compte n\'est plus actif ou suspendu.',
+                'status' => 'Compte non activé ou suspendu',
+            ], 403);
         }
 
-        // Vérification du nombre de tentatives de connexion
-        $cacheKeyAttempts = 'login_attempts_' . md5($email);
-        $cacheItemAttempts = $this->cache->getItem($cacheKeyAttempts);
-        $loginAttempts = $cacheItemAttempts->get();
-        if ($loginAttempts >= 5) {
+        // Vérification des identifiants de connexion
+        if (!$user || !$this->passwordHasher->isPasswordValid($user, $password)) {
             return new JsonResponse([
                 'error' => true,
-                'message' => 'Trop de tentatives de connexion (5 max). Réessayez dans 5 minutes.',
-                'status' => 'Trop de tentatives',
-                'code' => 429
-            ]);
+                'message' => 'Échec d\'authentification. Veuillez réessayer.',
+                'status' => 'Échec de connexion',
+            ], 401);
         }
 
-
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return new JsonResponse([
-                'error' => true,
-                'message' => 'Le format de l’e-mail est invalide.',
-                'status' => 'Format d’email invalide',
-                'code' => 400
-            ]);
-        }
-
-
-        if (!$this->passwordHasher->isPasswordValid($user, $password)) {
-            return $this->handleLoginFailure($email);
-        }
-
-
+        // Création du jeton JWT
         $token = $this->JWTManager->create($user);
-
-        $userSexe = $user->getSexe();
-
-        if ($userSexe === 0) {
-            $sexeFormatted = "Femme";
-        } elseif ($userSexe === 1) {
-            $sexeFormatted = "Homme";
-        } else {
-            $sexeFormatted = null;
-        }
-
 
         return new JsonResponse([
             'error' => false,
             'message' => 'L\'utilisateur a été authentifié avec succès',
-            'status' => 'Success',
-            'code' => 200,
-            'user' => [
-                'firstname' => $user->getFirstname(),
-                'lastname' => $user->getLastname(),
-                'email' => $user->getEmail(),
-                'tel' => $user->getTel(),
-                'sexe' => $sexeFormatted,
-                'artist' => $user->getArtist(),
-                'dateBirth' => $user->getDateBirth()->format('m-d-Y'),
-                'createdAt' => $user->getCreatedAt()->format('Y-m-d H:i:s'),
-            ],
+            'user' => $user->loginSerializer(),
             'token' => $token,
         ]);
     }
 
-    private function handleLoginFailure(string $email): JsonResponse
+    private function checkEmail(?string $email): bool
     {
-        // Incrémenter le compteur de tentatives de connexion
-        $cacheKeyAttempts = 'login_attempts_' . md5($email);
-        $cacheItemAttempts = $this->cache->getItem($cacheKeyAttempts);
-        $loginAttempts = $cacheItemAttempts->get();
-        $cacheItemAttempts->set($loginAttempts + 1);
-        $cacheItemAttempts->expiresAfter(300); // 5 minutes
-        $this->cache->save($cacheItemAttempts);
+        if ($email === null) {
+            return false;
+        }
+        $regex = '/^(([^<>()[\]\\.,;:\s@"\']+(\.[^<>()[\]\\.,;:\s@"\']+)*)|("[^"\']+"))@((\[\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\])|(([a-zA-Z\d\-]+\.)+[a-zA-Z]{2,}))$/';
+        return preg_match($regex, $email) === 1;
+    }
+
+    private function handleLoginAttempts(string $email): void
+    {
+        // Instanciation du cache
+        $cache = new FilesystemAdapter();
+
+        // Clé de cache pour le nombre de tentatives de connexion de l'utilisateur
+        $cacheKey = 'login_' . urlencode($email);
+
+        $cacheItem = $cache->getItem($cacheKey);
+        $requestCount = $cacheItem->get() ?? 0;
+        $maxLoginAttempts = 5;
+
+        // Si le nombre de tentatives de connexion dépasse le maximum autorisé
+        if ($requestCount >= $maxLoginAttempts) {
+            $timeToExpire = 30;
+            // Conversion en minutes pour une meilleure lisibilité
+            $timeToExpireInMinutes = $timeToExpire / 60;
+
+            // Réponse avec un message d'erreur indiquant le temps d'attente nécessaire
+            $response = new JsonResponse([
+                'error' => true,
+                'message' => 'Trop de tentatives de connexion (maximum 5). Veuillez réessayer ultérieurement - ' . $timeToExpireInMinutes . ' minutes d\'attente.',
+                'status' => 'Trop de tentatives (Rate Limiting)'
+            ], 429);
 
 
-        $cacheKeyError = 'login_error_' . md5($email);
-        $cacheItemError = $this->cache->getItem($cacheKeyError);
-        $cacheItemError->set(true);
-        $cacheItemError->expiresAfter(300); // 5 minutes
-        $this->cache->save($cacheItemError);
+            $response->send();
+            exit();
+        }
 
-
-        return new JsonResponse([
-            'error' => true,
-            'message' => "Echec d'authentification",
-            'status' => 'Échec de connexion',
-            'code' => 401
-        ]);
+        // Incrémentation du nombre de tentatives de connexion dans le cache
+        $cacheItem->set($requestCount + 1);
+        // Définition de l'expiration de l'entrée dans le cache (5 secondes dans cet exemple)
+        $cacheItem->expiresAfter(250);
+        $cache->save($cacheItem);
     }
 }

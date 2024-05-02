@@ -6,6 +6,8 @@ use App\Repository\AlbumRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\DBAL\Types\Types;
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: AlbumRepository::class)]
 class Album
@@ -19,7 +21,7 @@ class Album
     private ?string $idAlbum = null;
 
     #[ORM\Column(length: 90)]
-    private ?string $nom = null;
+    private ?string $name = null;
 
     #[ORM\Column(length: 20)]
     private ?string $categ = null;
@@ -27,8 +29,15 @@ class Album
     #[ORM\Column(length: 125)]
     private ?string $cover = null;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $year = null;
+
     #[ORM\Column]
-    private ?int $year = 2024;
+    private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $updateAt = null;
+
 
     #[ORM\ManyToOne(inversedBy: 'albums')]
     private ?Artist $artist_User_idUser = null;
@@ -51,21 +60,48 @@ class Album
         return $this->idAlbum;
     }
 
-    public function setIdAlbum(string $idAlbum): static
+    public function setIdAlbum(?string $idAlbum): string
     {
-        $this->idAlbum = $idAlbum;
+        if ($idAlbum !== null) {
+            $this->idAlbum = $idAlbum;
+        } else {
+            $uuid = Uuid::v4();
+            $this->idAlbum = 'spotimike:album:' . $uuid;
+        }
+        return $this->idAlbum;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getNom(): ?string
+    public function getUpdateAt(): ?\DateTimeInterface
     {
-        return $this->nom;
+        return $this->updateAt;
     }
 
-    public function setNom(string $nom): static
+    public function setUpdateAt(\DateTimeInterface $updateAt): static
     {
-        $this->nom = $nom;
+        $this->updateAt = $updateAt;
+
+        return $this;
+    }
+    public function getNom(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setNom(string $name): static
+    {
+        $this->name = $name;
 
         return $this;
     }
@@ -94,12 +130,12 @@ class Album
         return $this;
     }
 
-    public function getYear(): ?int
+    public function getYear(): ?\DateTimeInterface
     {
         return $this->year;
     }
 
-    public function setYear(int $year): static
+    public function setYear(\DateTimeInterface $year): static
     {
         $this->year = $year;
 
@@ -146,5 +182,58 @@ class Album
         }
 
         return $this;
+    }
+
+    public function albumSerializer()
+    {
+        $songs = $this->serializeSongs();
+        $artist = $this->getArtistUserIdUser();
+        $formatYear = $this->formatYear();
+        $label = $this->getArtistLabel($artist, $formatYear);
+        $createdAt = $this->getCreatedAt() ? $this->getCreatedAt()->format('Y-m-d') : null;
+
+
+        return [
+            'idAlbum' => $this->getIdAlbum(),
+            'nom' => $this->getNom(),
+            'categ' => $this->getCateg(),
+            'label' => $label,
+            'cover' => $this->getCover(),
+            'year' => $formatYear,
+            'createdAt' => $createdAt,
+            'songs' => $songs,
+        ];
+    }
+
+    // Méthode privée pour sérialiser les chansons associées à l'album
+    private function serializeSongs()
+    {
+        $songs = [];
+        foreach ($this->getSongIdSong() as $song) {
+            //    $songs[] = $song->songSeriaizer();
+        }
+        return $songs;
+    }
+
+    private function formatYear()
+    {
+        $year = $this->getYear();
+        return $year ? $year->format('Y') : null;
+    }
+
+    private function getArtistLabel($artist, $year)
+    {
+        $label = null;
+        $labelHasArtist = $artist->getLabelHasArtist()->filter(function ($labelHasArtist) use ($year) {
+            $joinedAt = $labelHasArtist->getSignAt();
+            $leftAt = $labelHasArtist->getLeftAt();
+
+            return $joinedAt <= $year && ($leftAt === null || $leftAt > $year);
+        })->first();
+
+        if ($labelHasArtist) {
+            $label = $labelHasArtist->getIdLabel()->getLabelName();
+        }
+        return $label;
     }
 }

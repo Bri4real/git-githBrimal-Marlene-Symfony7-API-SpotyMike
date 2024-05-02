@@ -206,7 +206,7 @@
     </parameter>
     <parameter key="twig.default_path">/Users/brimalmartin/ESIEA PROJECTS/git-githBrimal-Marlene-Symfony7-API-SpotyMike/templates</parameter>
     <parameter key="lexik_jwt_authentication.pass_phrase">%env(JWT_PASSPHRASE)%</parameter>
-    <parameter key="lexik_jwt_authentication.token_ttl">3600</parameter>
+    <parameter key="lexik_jwt_authentication.token_ttl">%env(JWT_TOKEN_TTL)%</parameter>
     <parameter key="lexik_jwt_authentication.clock_skew">0</parameter>
     <parameter key="lexik_jwt_authentication.user_identity_field">username</parameter>
     <parameter key="lexik_jwt_authentication.allow_no_expiration">false</parameter>
@@ -247,8 +247,18 @@
       <tag name="controller.service_arguments"/>
       <tag name="container.service_subscriber"/>
       <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="App\Services\JWTService"/>
+      <argument type="service" id="validator"/>
       <call method="setContainer">
         <argument type="service" id=".service_locator.jUv.zyj.App\Controller\ArtistController"/>
+      </call>
+    </service>
+    <service id="App\Controller\LabelController" class="App\Controller\LabelController" public="true" autowire="true" autoconfigure="true">
+      <tag name="controller.service_arguments"/>
+      <tag name="container.service_subscriber"/>
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <call method="setContainer">
+        <argument type="service" id=".service_locator.jUv.zyj.App\Controller\LabelController"/>
       </call>
     </service>
     <service id="App\Controller\RegistrationController" class="App\Controller\RegistrationController" public="true" autowire="true" autoconfigure="true">
@@ -277,6 +287,8 @@
       <tag name="controller.service_arguments"/>
       <tag name="container.service_subscriber"/>
       <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="App\Repository\UserRepository"/>
+      <argument type="service" id="App\Services\JWTService"/>
       <call method="setContainer">
         <argument type="service" id=".service_locator.jUv.zyj.App\Controller\UserController"/>
       </call>
@@ -285,11 +297,26 @@
       <tag name="doctrine.fixture.orm"/>
       <argument type="service" id="security.user_password_hasher"/>
     </service>
+    <service id="App\DataFixtures\LabelFixtures" class="App\DataFixtures\LabelFixtures" autowire="true" autoconfigure="true">
+      <tag name="doctrine.fixture.orm"/>
+    </service>
     <service id="App\Repository\AlbumRepository" class="App\Repository\AlbumRepository" autowire="true" autoconfigure="true">
       <tag name="doctrine.repository_service"/>
       <argument type="service" id="doctrine"/>
     </service>
     <service id="App\Repository\ArtistRepository" class="App\Repository\ArtistRepository" autowire="true" autoconfigure="true">
+      <tag name="doctrine.repository_service"/>
+      <argument type="service" id="doctrine"/>
+    </service>
+    <service id="App\Repository\FeaturingRepository" class="App\Repository\FeaturingRepository" autowire="true" autoconfigure="true">
+      <tag name="doctrine.repository_service"/>
+      <argument type="service" id="doctrine"/>
+    </service>
+    <service id="App\Repository\LabelHasArtistRepository" class="App\Repository\LabelHasArtistRepository" autowire="true" autoconfigure="true">
+      <tag name="doctrine.repository_service"/>
+      <argument type="service" id="doctrine"/>
+    </service>
+    <service id="App\Repository\LabelRepository" class="App\Repository\LabelRepository" autowire="true" autoconfigure="true">
       <tag name="doctrine.repository_service"/>
       <argument type="service" id="doctrine"/>
     </service>
@@ -317,6 +344,11 @@
       <argument type="service" id="router.default"/>
     </service>
     <service id="App\Services\ApiService" class="App\Services\ApiService" autowire="true" autoconfigure="true"/>
+    <service id="App\Services\JWTService" class="App\Services\JWTService" autowire="true" autoconfigure="true">
+      <argument type="service" id="lexik_jwt_authentication.jwt_manager"/>
+      <argument type="service" id="lexik_jwt_authentication.jws_provider.lcobucci"/>
+      <argument type="service" id="App\Repository\UserRepository"/>
+    </service>
     <service id="argument_metadata_factory" class="Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadataFactory"/>
     <service id="argument_resolver.backed_enum_resolver" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\BackedEnumValueResolver">
       <tag priority="100" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\BackedEnumValueResolver">controller.argument_value_resolver</tag>
@@ -347,7 +379,7 @@
     </service>
     <service id="argument_resolver.service" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">
       <tag priority="-50" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">controller.argument_value_resolver</tag>
-      <argument type="service" id=".service_locator.hrNtiYe"/>
+      <argument type="service" id=".service_locator..Tx_q12"/>
     </service>
     <service id="argument_resolver.default" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">
       <tag priority="-100" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">controller.argument_value_resolver</tag>
@@ -1537,7 +1569,7 @@
     </service>
     <service id="argument_resolver.not_tagged_controller" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\NotTaggedControllerValueResolver">
       <tag name="controller.argument_value_resolver" priority="-200"/>
-      <argument type="service" id=".service_locator.hrNtiYe"/>
+      <argument type="service" id=".service_locator..Tx_q12"/>
     </service>
     <service id="routing.resolver" class="Symfony\Component\Config\Loader\LoaderResolver">
       <call method="addLoader">
@@ -1711,7 +1743,6 @@
     <service id="serializer" class="Symfony\Component\Serializer\Serializer">
       <argument type="collection">
         <argument type="service" id="serializer.denormalizer.unwrapping"/>
-        <argument type="service" id="serializer.normalizer.backed_enum"/>
         <argument type="service" id="serializer.normalizer.problem"/>
         <argument type="service" id="serializer.normalizer.uid"/>
         <argument type="service" id="serializer.normalizer.datetime"/>
@@ -1719,6 +1750,7 @@
         <argument type="service" id="serializer.normalizer.datetimezone"/>
         <argument type="service" id="serializer.normalizer.dateinterval"/>
         <argument type="service" id="serializer.normalizer.form_error"/>
+        <argument type="service" id="serializer.normalizer.backed_enum"/>
         <argument type="service" id="serializer.normalizer.data_uri"/>
         <argument type="service" id="serializer.normalizer.json_serializable"/>
         <argument type="service" id="serializer.denormalizer.array"/>
@@ -1787,6 +1819,8 @@
       <argument type="service" id="property_info" on-invalid="ignore"/>
       <argument type="service" id="serializer.mapping.class_discriminator_resolver" on-invalid="ignore"/>
       <argument>null</argument>
+      <argument type="collection"/>
+      <argument type="service" id="property_info" on-invalid="ignore"/>
     </service>
     <service id="serializer.denormalizer.array" class="Symfony\Component\Serializer\Normalizer\ArrayDenormalizer">
       <tag name="serializer.normalizer" priority="-990"/>
@@ -1857,7 +1891,7 @@
       </argument>
     </service>
     <service id="serializer.normalizer.backed_enum" class="Symfony\Component\Serializer\Normalizer\BackedEnumNormalizer">
-      <tag name="serializer.normalizer" priority="-880"/>
+      <tag name="serializer.normalizer" priority="-915"/>
     </service>
     <service id="property_info" class="Symfony\Component\PropertyInfo\PropertyInfoExtractor">
       <argument type="iterator">
@@ -2520,7 +2554,7 @@
     <service id="doctrine.orm.configuration" class="Doctrine\ORM\Configuration" abstract="true"/>
     <service id="doctrine.orm.entity_manager.abstract" class="Doctrine\ORM\EntityManager" lazy="true" abstract="true"/>
     <service id="doctrine.orm.container_repository_factory" class="Doctrine\Bundle\DoctrineBundle\Repository\ContainerRepositoryFactory">
-      <argument type="service" id=".service_locator.KVX1Vqc"/>
+      <argument type="service" id=".service_locator.atrx0o4"/>
     </service>
     <service id="doctrine.orm.manager_configurator.abstract" class="Doctrine\Bundle\DoctrineBundle\ManagerConfigurator" abstract="true">
       <argument type="collection"/>
@@ -3113,6 +3147,11 @@
       <argument type="service" id="maker.file_manager"/>
       <argument type="service" id="maker.doctrine_helper"/>
       <argument type="service" id="maker.entity_class_generator"/>
+      <argument type="service" id="router.default" on-invalid="ignore"/>
+    </service>
+    <service id="maker.maker.make_schedule" class="Symfony\Bundle\MakerBundle\Maker\MakeSchedule">
+      <tag name="maker.command"/>
+      <argument type="service" id="maker.file_manager"/>
     </service>
     <service id="maker.maker.make_serializer_encoder" class="Symfony\Bundle\MakerBundle\Maker\MakeSerializerEncoder">
       <tag name="maker.command"/>
@@ -3162,6 +3201,16 @@
       <argument type="service" id="maker.file_manager"/>
       <argument type="service" id="maker.security_config_updater"/>
       <argument type="service" id="maker.security_controller_builder"/>
+    </service>
+    <service id="maker.maker.make_custom_authenticator" class="Symfony\Bundle\MakerBundle\Maker\Security\MakeCustomAuthenticator">
+      <tag name="maker.command"/>
+      <argument type="service" id="maker.file_manager"/>
+      <argument type="service" id="maker.generator"/>
+    </service>
+    <service id="maker.maker.make_webhook" class="Symfony\Bundle\MakerBundle\Maker\MakeWebhook">
+      <tag name="maker.command"/>
+      <argument type="service" id="maker.file_manager"/>
+      <argument type="service" id="maker.generator"/>
     </service>
     <service id="security.authorization_checker" class="Symfony\Component\Security\Core\Authorization\AuthorizationChecker">
       <argument type="service" id="security.token_storage"/>
@@ -4197,7 +4246,7 @@
       <argument type="service" id="lexik_jwt_authentication.key_loader.raw"/>
       <argument>openssl</argument>
       <argument>RS256</argument>
-      <argument>3600</argument>
+      <argument>%env(JWT_TOKEN_TTL)%</argument>
       <argument>0</argument>
       <deprecated package="lexik/jwt-authentication-bundle" version="2.5">The "%service_id%" is deprecated since version 2.5 and will be removed in 5.0, use "lexik_jwt_authentication.jws_provider.lcobucci" instead.</deprecated>
     </service>
@@ -4205,10 +4254,15 @@
       <argument type="service" id="lexik_jwt_authentication.encoder.lcobucci"/>
       <argument type="service" id="debug.event_dispatcher"/>
       <argument>username</argument>
+      <argument type="service" id="lexik_jwt_authentication.payload_enrichment"/>
       <call method="setUserIdentityField">
         <argument>username</argument>
         <argument>false</argument>
       </call>
+    </service>
+    <service id="lexik_jwt_authentication.payload_enrichment.random_jti_enrichment" class="Lexik\Bundle\JWTAuthenticationBundle\Services\PayloadEnrichment\RandomJtiEnrichment"/>
+    <service id="lexik_jwt_authentication.payload_enrichment" class="Lexik\Bundle\JWTAuthenticationBundle\Services\PayloadEnrichment\ChainEnrichment">
+      <argument type="collection"/>
     </service>
     <service id="lexik_jwt_authentication.key_loader.abstract" abstract="true">
       <argument></argument>
@@ -4232,7 +4286,7 @@
       <argument type="service" id="lexik_jwt_authentication.key_loader.raw"/>
       <argument>openssl</argument>
       <argument>RS256</argument>
-      <argument>3600</argument>
+      <argument>%env(JWT_TOKEN_TTL)%</argument>
       <argument>0</argument>
       <argument>false</argument>
     </service>
@@ -4370,6 +4424,10 @@
             <argument key="fixture" type="service" id="App\DataFixtures\AppFixtures"/>
             <argument key="groups" type="collection"/>
           </argument>
+          <argument type="collection">
+            <argument key="fixture" type="service" id="App\DataFixtures\LabelFixtures"/>
+            <argument key="groups" type="collection"/>
+          </argument>
         </argument>
       </call>
     </service>
@@ -4385,6 +4443,9 @@
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\ArtistController" class="App\Controller\ArtistController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\ArtistController" class="App\Controller\ArtistController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\ArtistController" class="App\Controller\ArtistController" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\LabelController" class="App\Controller\LabelController" autowire="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\LabelController" class="App\Controller\LabelController" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Controller\LabelController" class="App\Controller\LabelController" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\RegistrationController" class="App\Controller\RegistrationController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\RegistrationController" class="App\Controller\RegistrationController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\RegistrationController" class="App\Controller\RegistrationController" autowire="true" autoconfigure="true" abstract="true"/>
@@ -4396,10 +4457,18 @@
     <service id=".abstract.instanceof.App\Controller\UserController" class="App\Controller\UserController" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\FixturesBundle\ORMFixtureInterface.0.App\DataFixtures\AppFixtures" class="App\DataFixtures\AppFixtures" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\DataFixtures\AppFixtures" class="App\DataFixtures\AppFixtures" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Doctrine\Bundle\FixturesBundle\ORMFixtureInterface.0.App\DataFixtures\LabelFixtures" class="App\DataFixtures\LabelFixtures" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\DataFixtures\LabelFixtures" class="App\DataFixtures\LabelFixtures" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\AlbumRepository" class="App\Repository\AlbumRepository" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Repository\AlbumRepository" class="App\Repository\AlbumRepository" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\ArtistRepository" class="App\Repository\ArtistRepository" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Repository\ArtistRepository" class="App\Repository\ArtistRepository" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\FeaturingRepository" class="App\Repository\FeaturingRepository" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Repository\FeaturingRepository" class="App\Repository\FeaturingRepository" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\LabelHasArtistRepository" class="App\Repository\LabelHasArtistRepository" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Repository\LabelHasArtistRepository" class="App\Repository\LabelHasArtistRepository" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\LabelRepository" class="App\Repository\LabelRepository" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Repository\LabelRepository" class="App\Repository\LabelRepository" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\PasswordRequestTokenRepository" class="App\Repository\PasswordRequestTokenRepository" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Repository\PasswordRequestTokenRepository" class="App\Repository\PasswordRequestTokenRepository" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\PlaylistHasSongRepository" class="App\Repository\PlaylistHasSongRepository" autowire="true" abstract="true"/>
@@ -4637,6 +4706,20 @@
         <argument>Create controller, entity, and repositories for use with symfonycasts/reset-password-bundle</argument>
       </call>
     </service>
+    <service id="maker.auto_command.make_schedule" class="Symfony\Bundle\MakerBundle\Command\MakerCommand">
+      <tag name="console.command" command="make:schedule" description="Create a scheduler component"/>
+      <tag name="container.no_preload"/>
+      <argument type="service" id="maker.maker.make_schedule"/>
+      <argument type="service" id="maker.file_manager"/>
+      <argument type="service" id="maker.generator"/>
+      <argument type="service" id="maker.template_linter"/>
+      <call method="setName">
+        <argument>make:schedule</argument>
+      </call>
+      <call method="setDescription">
+        <argument>Create a scheduler component</argument>
+      </call>
+    </service>
     <service id="maker.auto_command.make_serializer_encoder" class="Symfony\Bundle\MakerBundle\Command\MakerCommand">
       <tag name="console.command" command="make:serializer:encoder" description="Create a new serializer encoder class"/>
       <tag name="container.no_preload"/>
@@ -4785,6 +4868,34 @@
         <argument>Generate the code needed for the form_login authenticator</argument>
       </call>
     </service>
+    <service id="maker.auto_command.make_security_custom" class="Symfony\Bundle\MakerBundle\Command\MakerCommand">
+      <tag name="console.command" command="make:security:custom" description="Create a custom security authenticator."/>
+      <tag name="container.no_preload"/>
+      <argument type="service" id="maker.maker.make_custom_authenticator"/>
+      <argument type="service" id="maker.file_manager"/>
+      <argument type="service" id="maker.generator"/>
+      <argument type="service" id="maker.template_linter"/>
+      <call method="setName">
+        <argument>make:security:custom</argument>
+      </call>
+      <call method="setDescription">
+        <argument>Create a custom security authenticator.</argument>
+      </call>
+    </service>
+    <service id="maker.auto_command.make_webhook" class="Symfony\Bundle\MakerBundle\Command\MakerCommand">
+      <tag name="console.command" command="make:webhook" description="Create a new Webhook"/>
+      <tag name="container.no_preload"/>
+      <argument type="service" id="maker.maker.make_webhook"/>
+      <argument type="service" id="maker.file_manager"/>
+      <argument type="service" id="maker.generator"/>
+      <argument type="service" id="maker.template_linter"/>
+      <call method="setName">
+        <argument>make:webhook</argument>
+      </call>
+      <call method="setDescription">
+        <argument>Create a new Webhook</argument>
+      </call>
+    </service>
     <service id=".service_locator.y4_Zrx." class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
@@ -4797,35 +4908,19 @@
         <argument key="album" type="service_closure" id=".errored..service_locator.KOhdJhL.App\Entity\Album"/>
       </argument>
     </service>
-    <service id=".service_locator.v6sch5A" class="Symfony\Component\DependencyInjection\ServiceLocator">
-      <tag name="container.service_locator"/>
-      <argument type="collection">
-        <argument key="artist" type="service_closure" id=".errored..service_locator.v6sch5A.App\Entity\Artist"/>
-      </argument>
-    </service>
-    <service id=".service_locator.Hz5btge" class="Symfony\Component\DependencyInjection\ServiceLocator">
-      <tag name="container.service_locator"/>
-      <argument type="collection">
-        <argument key="user" type="service_closure" id=".errored..service_locator.Hz5btge.App\Entity\User"/>
-      </argument>
-    </service>
     <service id=".service_locator.r4u1mW2" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="passwordHash" type="service_closure" id="security.user_password_hasher"/>
       </argument>
     </service>
-    <service id=".service_locator.hrNtiYe" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator..Tx_q12" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="App\Controller\AlbumController::delete" type="service_closure" id=".service_locator.KOhdJhL"/>
         <argument key="App\Controller\AlbumController::show" type="service_closure" id=".service_locator.KOhdJhL"/>
         <argument key="App\Controller\AlbumController::update" type="service_closure" id=".service_locator.KOhdJhL"/>
-        <argument key="App\Controller\ArtistController::delete" type="service_closure" id=".service_locator.v6sch5A"/>
-        <argument key="App\Controller\ArtistController::show" type="service_closure" id=".service_locator.v6sch5A"/>
-        <argument key="App\Controller\ArtistController::update" type="service_closure" id=".service_locator.v6sch5A"/>
-        <argument key="App\Controller\UserController::create" type="service_closure" id=".service_locator.r4u1mW2"/>
-        <argument key="App\Controller\UserController::isActive" type="service_closure" id=".service_locator.Hz5btge"/>
+        <argument key="App\Controller\RegistrationController::register" type="service_closure" id=".service_locator.r4u1mW2"/>
         <argument key="App\Kernel::loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="App\Kernel::registerContainerConfiguration" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="kernel::loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
@@ -4833,11 +4928,7 @@
         <argument key="App\Controller\AlbumController:delete" type="service_closure" id=".service_locator.KOhdJhL"/>
         <argument key="App\Controller\AlbumController:show" type="service_closure" id=".service_locator.KOhdJhL"/>
         <argument key="App\Controller\AlbumController:update" type="service_closure" id=".service_locator.KOhdJhL"/>
-        <argument key="App\Controller\ArtistController:delete" type="service_closure" id=".service_locator.v6sch5A"/>
-        <argument key="App\Controller\ArtistController:show" type="service_closure" id=".service_locator.v6sch5A"/>
-        <argument key="App\Controller\ArtistController:update" type="service_closure" id=".service_locator.v6sch5A"/>
-        <argument key="App\Controller\UserController:create" type="service_closure" id=".service_locator.r4u1mW2"/>
-        <argument key="App\Controller\UserController:isActive" type="service_closure" id=".service_locator.Hz5btge"/>
+        <argument key="App\Controller\RegistrationController:register" type="service_closure" id=".service_locator.r4u1mW2"/>
         <argument key="kernel:loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="kernel:registerContainerConfiguration" type="service_closure" id=".service_locator.y4_Zrx."/>
       </argument>
@@ -4933,11 +5024,14 @@
         <argument key="doctrine.orm.listeners.pdo_session_handler_schema_listener" type="service_closure" id="doctrine.orm.listeners.pdo_session_handler_schema_listener"/>
       </argument>
     </service>
-    <service id=".service_locator.KVX1Vqc" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.atrx0o4" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="App\Repository\AlbumRepository" type="service_closure" id="App\Repository\AlbumRepository"/>
         <argument key="App\Repository\ArtistRepository" type="service_closure" id="App\Repository\ArtistRepository"/>
+        <argument key="App\Repository\FeaturingRepository" type="service_closure" id="App\Repository\FeaturingRepository"/>
+        <argument key="App\Repository\LabelHasArtistRepository" type="service_closure" id="App\Repository\LabelHasArtistRepository"/>
+        <argument key="App\Repository\LabelRepository" type="service_closure" id="App\Repository\LabelRepository"/>
         <argument key="App\Repository\PasswordRequestTokenRepository" type="service_closure" id="App\Repository\PasswordRequestTokenRepository"/>
         <argument key="App\Repository\PlaylistHasSongRepository" type="service_closure" id="App\Repository\PlaylistHasSongRepository"/>
         <argument key="App\Repository\PlaylistRepository" type="service_closure" id="App\Repository\PlaylistRepository"/>
@@ -5150,6 +5244,12 @@
       <argument type="service" id="service_container"/>
       <factory service=".service_locator.jUv.zyj" method="withContext"/>
     </service>
+    <service id=".service_locator.jUv.zyj.App\Controller\LabelController" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator_context" id="App\Controller\LabelController"/>
+      <argument>App\Controller\LabelController</argument>
+      <argument type="service" id="service_container"/>
+      <factory service=".service_locator.jUv.zyj" method="withContext"/>
+    </service>
     <service id=".service_locator.jUv.zyj.App\Controller\RegistrationController" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator_context" id="App\Controller\RegistrationController"/>
       <argument>App\Controller\RegistrationController</argument>
@@ -5297,6 +5397,7 @@
           <argument>App\Controller\LoginController</argument>
           <argument>App\Controller\AlbumController</argument>
           <argument>App\Controller\ArtistController</argument>
+          <argument>App\Controller\LabelController</argument>
           <argument>App\Controller\RegistrationController</argument>
           <argument>App\Controller\SongController</argument>
           <argument>App\Controller\UserController</argument>
@@ -5353,12 +5454,6 @@
     </service>
     <service id=".errored..service_locator.KOhdJhL.App\Entity\Album" class="App\Entity\Album">
       <tag name="container.error" message="Cannot autowire service &quot;.service_locator.KOhdJhL&quot;: it needs an instance of &quot;App\Entity\Album&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
-    </service>
-    <service id=".errored..service_locator.v6sch5A.App\Entity\Artist" class="App\Entity\Artist">
-      <tag name="container.error" message="Cannot autowire service &quot;.service_locator.v6sch5A&quot;: it needs an instance of &quot;App\Entity\Artist&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
-    </service>
-    <service id=".errored..service_locator.Hz5btge.App\Entity\User" class="App\Entity\User">
-      <tag name="container.error" message="Cannot autowire service &quot;.service_locator.Hz5btge&quot;: it needs an instance of &quot;App\Entity\User&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
     </service>
     <service id=".console.command.about.lazy" class="Symfony\Component\Console\Command\LazyCommand">
       <argument>about</argument>
@@ -5803,6 +5898,13 @@
       <argument>false</argument>
       <argument type="service_closure" id="maker.auto_command.make_reset_password"/>
     </service>
+    <service id=".maker.auto_command.make_schedule.lazy" class="Symfony\Component\Console\Command\LazyCommand">
+      <argument>make:schedule</argument>
+      <argument type="collection"/>
+      <argument>Create a scheduler component</argument>
+      <argument>false</argument>
+      <argument type="service_closure" id="maker.auto_command.make_schedule"/>
+    </service>
     <service id=".maker.auto_command.make_serializer_encoder.lazy" class="Symfony\Component\Console\Command\LazyCommand">
       <argument>make:serializer:encoder</argument>
       <argument type="collection"/>
@@ -5876,9 +5978,23 @@
       <argument>false</argument>
       <argument type="service_closure" id="maker.auto_command.make_security_form_login"/>
     </service>
+    <service id=".maker.auto_command.make_security_custom.lazy" class="Symfony\Component\Console\Command\LazyCommand">
+      <argument>make:security:custom</argument>
+      <argument type="collection"/>
+      <argument>Create a custom security authenticator.</argument>
+      <argument>false</argument>
+      <argument type="service_closure" id="maker.auto_command.make_security_custom"/>
+    </service>
+    <service id=".maker.auto_command.make_webhook.lazy" class="Symfony\Component\Console\Command\LazyCommand">
+      <argument>make:webhook</argument>
+      <argument type="collection"/>
+      <argument>Create a new Webhook</argument>
+      <argument>false</argument>
+      <argument type="service_closure" id="maker.auto_command.make_webhook"/>
+    </service>
     <service id="console.command_loader" class="Symfony\Component\Console\CommandLoader\ContainerCommandLoader" public="true">
       <tag name="container.no_preload"/>
-      <argument type="service" id=".service_locator._ynlhbt"/>
+      <argument type="service" id=".service_locator.1oClzLA"/>
       <argument type="collection">
         <argument key="about">console.command.about</argument>
         <argument key="assets:install">console.command.assets_install</argument>
@@ -5961,6 +6077,7 @@
         <argument key="make:messenger-middleware">maker.auto_command.make_messenger_middleware</argument>
         <argument key="make:registration-form">maker.auto_command.make_registration_form</argument>
         <argument key="make:reset-password">maker.auto_command.make_reset_password</argument>
+        <argument key="make:schedule">maker.auto_command.make_schedule</argument>
         <argument key="make:serializer:encoder">maker.auto_command.make_serializer_encoder</argument>
         <argument key="make:serializer:normalizer">maker.auto_command.make_serializer_normalizer</argument>
         <argument key="make:twig-extension">maker.auto_command.make_twig_extension</argument>
@@ -5973,9 +6090,11 @@
         <argument key="make:migration">maker.auto_command.make_migration</argument>
         <argument key="make:stimulus-controller">maker.auto_command.make_stimulus_controller</argument>
         <argument key="make:security:form-login">maker.auto_command.make_security_form_login</argument>
+        <argument key="make:security:custom">maker.auto_command.make_security_custom</argument>
+        <argument key="make:webhook">maker.auto_command.make_webhook</argument>
       </argument>
     </service>
-    <service id=".service_locator._ynlhbt" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.1oClzLA" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="Doctrine\DBAL\Tools\Console\Command\RunSqlCommand" type="service_closure" id="Doctrine\DBAL\Tools\Console\Command\RunSqlCommand"/>
@@ -6054,6 +6173,8 @@
         <argument key="maker.auto_command.make_migration" type="service_closure" id=".maker.auto_command.make_migration.lazy"/>
         <argument key="maker.auto_command.make_registration_form" type="service_closure" id=".maker.auto_command.make_registration_form.lazy"/>
         <argument key="maker.auto_command.make_reset_password" type="service_closure" id=".maker.auto_command.make_reset_password.lazy"/>
+        <argument key="maker.auto_command.make_schedule" type="service_closure" id=".maker.auto_command.make_schedule.lazy"/>
+        <argument key="maker.auto_command.make_security_custom" type="service_closure" id=".maker.auto_command.make_security_custom.lazy"/>
         <argument key="maker.auto_command.make_security_form_login" type="service_closure" id=".maker.auto_command.make_security_form_login.lazy"/>
         <argument key="maker.auto_command.make_serializer_encoder" type="service_closure" id=".maker.auto_command.make_serializer_encoder.lazy"/>
         <argument key="maker.auto_command.make_serializer_normalizer" type="service_closure" id=".maker.auto_command.make_serializer_normalizer.lazy"/>
@@ -6064,6 +6185,7 @@
         <argument key="maker.auto_command.make_user" type="service_closure" id=".maker.auto_command.make_user.lazy"/>
         <argument key="maker.auto_command.make_validator" type="service_closure" id=".maker.auto_command.make_validator.lazy"/>
         <argument key="maker.auto_command.make_voter" type="service_closure" id=".maker.auto_command.make_voter.lazy"/>
+        <argument key="maker.auto_command.make_webhook" type="service_closure" id=".maker.auto_command.make_webhook.lazy"/>
         <argument key="security.command.debug_firewall" type="service_closure" id=".security.command.debug_firewall.lazy"/>
         <argument key="security.command.user_password_hash" type="service_closure" id=".security.command.user_password_hash.lazy"/>
         <argument key="twig.command.debug" type="service_closure" id=".twig.command.debug.lazy"/>
@@ -6197,7 +6319,7 @@
     <service id="lexik_jwt_authentication.key_loader" alias="lexik_jwt_authentication.key_loader.raw" public="true"/>
     <service id="container.env_var_processors_locator" alias=".service_locator.bJ.4HC5" public="true"/>
     <service id="twig.loader.filesystem" alias="twig.loader.native_filesystem"/>
-    <service id="argument_resolver.controller_locator" alias=".service_locator.hrNtiYe"/>
+    <service id="argument_resolver.controller_locator" alias=".service_locator..Tx_q12"/>
     <service id="doctrine.id_generator_locator" alias=".service_locator.KLVvNIq"/>
     <service id="twig.loader" alias="twig.loader.native_filesystem"/>
     <service id="Psr\Log\LoggerInterface" alias="logger"/>
@@ -6214,8 +6336,6 @@
     <service id="security.event_dispatcher.api" alias="debug.security.event_dispatcher.api"/>
     <service id=".service_locator.gFlme_s" alias=".service_locator.y4_Zrx."/>
     <service id=".service_locator..MsFB5z" alias=".service_locator.KOhdJhL"/>
-    <service id=".service_locator.bvsSv3c" alias=".service_locator.v6sch5A"/>
-    <service id=".service_locator.EmZ4cZI" alias=".service_locator.Hz5btge"/>
     <service id=".service_locator.tSJwMdF" alias=".service_locator.r4u1mW2"/>
     <service id=".service_locator.kHs.Tsl" alias=".service_locator.jUv.zyj"/>
   </services>
