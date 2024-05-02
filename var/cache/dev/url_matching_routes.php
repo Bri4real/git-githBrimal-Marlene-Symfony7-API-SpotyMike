@@ -8,7 +8,10 @@
 return [
     false, // $matchHost
     [ // $staticRoutes
-        '/albums' => [[['_route' => 'album_index', '_controller' => 'App\\Controller\\AlbumController::index'], null, ['GET' => 0], null, false, false, null]],
+        '/albums' => [
+            [['_route' => 'album_index', '_controller' => 'App\\Controller\\AlbumController::index'], null, ['GET' => 0], null, false, false, null],
+            [['_route' => 'app_get_all_albums', '_controller' => 'App\\Controller\\AlbumController::AllAlbums'], null, ['GET' => 0], null, false, false, null],
+        ],
         '/artist' => [
             [['_route' => 'app_create_update_artist', '_controller' => 'App\\Controller\\ArtistController::create_update_artist'], null, ['POST' => 0], null, false, false, null],
             [['_route' => 'app_get_artists', '_controller' => 'App\\Controller\\ArtistController::getAllArtists'], null, ['GET' => 0], null, false, false, null],

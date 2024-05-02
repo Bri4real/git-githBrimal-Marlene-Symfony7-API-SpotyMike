@@ -5,6 +5,7 @@
 return [
     '_preview_error' => [['code', '_format'], ['_controller' => 'error_controller::preview', '_format' => 'html'], ['code' => '\\d+'], [['variable', '.', '[^/]++', '_format', true], ['variable', '/', '\\d+', 'code', true], ['text', '/_error']], [], [], []],
     'album_index' => [[], ['_controller' => 'App\\Controller\\AlbumController::index'], [], [['text', '/albums']], [], [], []],
+    'app_get_all_albums' => [[], ['_controller' => 'App\\Controller\\AlbumController::AllAlbums'], [], [['text', '/albums']], [], [], []],
     'app_get_artist_by_fullname' => [['fullname'], ['_controller' => 'App\\Controller\\ArtistController::getArtistByFullname'], [], [['variable', '/', '[^/]++', 'fullname', true], ['text', '/artist']], [], [], []],
     'app_create_update_artist' => [[], ['_controller' => 'App\\Controller\\ArtistController::create_update_artist'], [], [['text', '/artist']], [], [], []],
     'app_get_artists' => [[], ['_controller' => 'App\\Controller\\ArtistController::getAllArtists'], [], [['text', '/artist']], [], [], []],
@@ -27,6 +28,7 @@ return [
     'app_reset_password_post' => [['token'], ['_controller' => 'App\\Controller\\UserController::resetPasswordPost'], [], [['variable', '/', '[^/]++', 'token', true], ['text', '/reset-password']], [], [], []],
     'api_login_check' => [[], [], [], [['text', '/login_check']], [], [], []],
     'App\Controller\AlbumController::index' => [[], ['_controller' => 'App\\Controller\\AlbumController::index'], [], [['text', '/albums']], [], [], []],
+    'App\Controller\AlbumController::AllAlbums' => [[], ['_controller' => 'App\\Controller\\AlbumController::AllAlbums'], [], [['text', '/albums']], [], [], []],
     'App\Controller\ArtistController::getArtistByFullname' => [['fullname'], ['_controller' => 'App\\Controller\\ArtistController::getArtistByFullname'], [], [['variable', '/', '[^/]++', 'fullname', true], ['text', '/artist']], [], [], []],
     'App\Controller\ArtistController::create_update_artist' => [[], ['_controller' => 'App\\Controller\\ArtistController::create_update_artist'], [], [['text', '/artist']], [], [], []],
     'App\Controller\ArtistController::getAllArtists' => [[], ['_controller' => 'App\\Controller\\ArtistController::getAllArtists'], [], [['text', '/artist']], [], [], []],

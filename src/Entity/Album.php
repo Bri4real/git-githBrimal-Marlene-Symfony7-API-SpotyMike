@@ -20,9 +20,10 @@ class Album
     #[ORM\Column(length: 90)]
     private ?string $idAlbum = null;
 
+    // id nom categ label cover year et created at
 
     #[ORM\Column(length: 95)]
-    private ?string $title = null;
+    private ?string $nom = null;
 
     #[ORM\Column(length: 20)]
     private ?string $categ = null;
@@ -37,7 +38,9 @@ class Album
     #[ORM\Column(length: 90)]
     private ?string $name = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    /**
+     * @ORM\Column(type="date")
+     */
     private ?\DateTimeInterface $year = null;
 
     #[ORM\Column]
@@ -68,7 +71,7 @@ class Album
         return $this->idAlbum;
     }
 
-    public function setIdAlbum(?string $idAlbum): string
+    public function setIdAlbum(?string $idAlbum = null): self
     {
         if ($idAlbum !== null) {
             $this->idAlbum = $idAlbum;
@@ -76,17 +79,17 @@ class Album
             $uuid = Uuid::v4();
             $this->idAlbum = 'spotimike:album:' . $uuid;
         }
-        return $this->idAlbum;
+        return $this;
     }
 
     public function getTitle(): ?string
     {
-        return $this->title;
+        return $this->nom;
     }
 
-    public function setTitle(string $title): static
+    public function setTitle(string $nom): static
     {
-        $this->title = $title;
+        $this->nom = $nom;
 
         return $this;
     }
@@ -215,7 +218,7 @@ class Album
         return $this;
     }
 
-    public function getAllAlbumss()
+    public function getAllAlbums()
     {
         $songs = [];
         foreach ($this->getSongIdSong() as $song) {
@@ -263,7 +266,7 @@ class Album
         ];
     }
 
-    // Méthode privée pour sérialiser les chansons associées à l'album
+
     private function serializeSongs()
     {
         $songs = [];
