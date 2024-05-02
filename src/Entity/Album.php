@@ -20,8 +20,10 @@ class Album
     #[ORM\Column(length: 90)]
     private ?string $idAlbum = null;
 
-    #[ORM\Column(length: 90)]
-    private ?string $name = null;
+    // id nom categ label cover year et created at
+
+    #[ORM\Column(length: 95)]
+    private ?string $nom = null;
 
     #[ORM\Column(length: 20)]
     private ?string $categ = null;
@@ -29,7 +31,16 @@ class Album
     #[ORM\Column(length: 125)]
     private ?string $cover = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    //add visibility
+    #[ORM\Column]
+    private ?string $visibility = '0';
+
+    #[ORM\Column(length: 90)]
+    private ?string $name = null;
+
+    /**
+     * @ORM\Column(type="date")
+     */
     private ?\DateTimeInterface $year = null;
 
     #[ORM\Column]
@@ -60,7 +71,7 @@ class Album
         return $this->idAlbum;
     }
 
-    public function setIdAlbum(?string $idAlbum): string
+    public function setIdAlbum(?string $idAlbum = null): self
     {
         if ($idAlbum !== null) {
             $this->idAlbum = $idAlbum;
@@ -68,7 +79,19 @@ class Album
             $uuid = Uuid::v4();
             $this->idAlbum = 'spotimike:album:' . $uuid;
         }
-        return $this->idAlbum;
+        return $this;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->nom;
+    }
+
+    public function setTitle(string $nom): static
+    {
+        $this->nom = $nom;
+
+        return $this;
     }
 
     public function getCreatedAt(): ?\DateTimeImmutable
@@ -79,6 +102,18 @@ class Album
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getVisibility(): ?string
+    {
+        return $this->visibility;
+    }
+
+    public function setVisibility(string $visibility): static
+    {
+        $this->visibility = $visibility;
 
         return $this;
     }
@@ -94,12 +129,12 @@ class Album
 
         return $this;
     }
-    public function getNom(): ?string
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    public function setNom(string $name): static
+    public function setName(string $name): static
     {
         $this->name = $name;
 
@@ -175,7 +210,6 @@ class Album
     public function removeSongIdSong(Song $songIdSong): static
     {
         if ($this->song_idSong->removeElement($songIdSong)) {
-            // set the owning side to null (unless already changed)
             if ($songIdSong->getAlbum() === $this) {
                 $songIdSong->setAlbum(null);
             }
@@ -184,7 +218,34 @@ class Album
         return $this;
     }
 
-    public function albumSerializer()
+    public function getAllAlbums()
+    {
+        $songs = [];
+        foreach ($this->getSongIdSong() as $song) {
+            //   $songs[] = $song->songSerializerForAlbum();
+        }
+
+        $artist = $this->getArtistUserIdUser();
+        $year = $this->getCreatedAt();
+        $formatYear = $year ? $year->format('Y') : null;
+        $label = $this->getArtistLabel($artist, $formatYear);
+        $createdAt = $this->getCreatedAt() ? $this->getCreatedAt()->format('Y-m-d') : null;
+
+
+        return [
+            'id' => strval($this->getId()),
+            'nom' => $this->getTitle(),
+            'categ' => $this->getCateg(),
+            'label' => $label,
+            'cover' => $this->getCover(),
+            'year' => $formatYear,
+            'createdAt' => $createdAt,
+            'songs' => $songs,
+            'artist' => $artist->getAlbumArtist(),
+
+        ];
+    }
+    public function getAlbum()
     {
         $songs = $this->serializeSongs();
         $artist = $this->getArtistUserIdUser();
@@ -195,7 +256,7 @@ class Album
 
         return [
             'idAlbum' => $this->getIdAlbum(),
-            'nom' => $this->getNom(),
+            'nom' => $this->getName(),
             'categ' => $this->getCateg(),
             'label' => $label,
             'cover' => $this->getCover(),
@@ -205,12 +266,12 @@ class Album
         ];
     }
 
-    // Méthode privée pour sérialiser les chansons associées à l'album
+
     private function serializeSongs()
     {
         $songs = [];
         foreach ($this->getSongIdSong() as $song) {
-            //    $songs[] = $song->songSeriaizer();
+            //$songs[] = $song->songSeriaizer();
         }
         return $songs;
     }
@@ -221,7 +282,7 @@ class Album
         return $year ? $year->format('Y') : null;
     }
 
-    private function getArtistLabel($artist, $year)
+    public function getArtistLabel($artist, $year)
     {
         $label = null;
         $labelHasArtist = $artist->getLabelHasArtist()->filter(function ($labelHasArtist) use ($year) {

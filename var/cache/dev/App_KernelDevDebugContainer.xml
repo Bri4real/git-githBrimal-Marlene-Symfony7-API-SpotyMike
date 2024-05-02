@@ -239,6 +239,7 @@
       <tag name="controller.service_arguments"/>
       <tag name="container.service_subscriber"/>
       <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="App\Services\JWTService"/>
       <call method="setContainer">
         <argument type="service" id=".service_locator.jUv.zyj.App\Controller\AlbumController"/>
       </call>
@@ -287,6 +288,7 @@
       <tag name="controller.service_arguments"/>
       <tag name="container.service_subscriber"/>
       <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <argument type="service" id="security.user_password_hasher"/>
       <argument type="service" id="App\Repository\UserRepository"/>
       <argument type="service" id="App\Services\JWTService"/>
       <call method="setContainer">
@@ -379,7 +381,7 @@
     </service>
     <service id="argument_resolver.service" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">
       <tag priority="-50" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">controller.argument_value_resolver</tag>
-      <argument type="service" id=".service_locator..Tx_q12"/>
+      <argument type="service" id=".service_locator.rOy1P.f"/>
     </service>
     <service id="argument_resolver.default" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">
       <tag priority="-100" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">controller.argument_value_resolver</tag>
@@ -1569,7 +1571,7 @@
     </service>
     <service id="argument_resolver.not_tagged_controller" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\NotTaggedControllerValueResolver">
       <tag name="controller.argument_value_resolver" priority="-200"/>
-      <argument type="service" id=".service_locator..Tx_q12"/>
+      <argument type="service" id=".service_locator.rOy1P.f"/>
     </service>
     <service id="routing.resolver" class="Symfony\Component\Config\Loader\LoaderResolver">
       <call method="addLoader">
@@ -4914,13 +4916,20 @@
         <argument key="passwordHash" type="service_closure" id="security.user_password_hasher"/>
       </argument>
     </service>
-    <service id=".service_locator..Tx_q12" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.NygMs_p" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="JWTManager" type="service_closure" id="lexik_jwt_authentication.jwt_manager"/>
+      </argument>
+    </service>
+    <service id=".service_locator.rOy1P.f" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="App\Controller\AlbumController::delete" type="service_closure" id=".service_locator.KOhdJhL"/>
         <argument key="App\Controller\AlbumController::show" type="service_closure" id=".service_locator.KOhdJhL"/>
         <argument key="App\Controller\AlbumController::update" type="service_closure" id=".service_locator.KOhdJhL"/>
         <argument key="App\Controller\RegistrationController::register" type="service_closure" id=".service_locator.r4u1mW2"/>
+        <argument key="App\Controller\UserController::resetPassword" type="service_closure" id=".service_locator.NygMs_p"/>
         <argument key="App\Kernel::loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="App\Kernel::registerContainerConfiguration" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="kernel::loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
@@ -4929,6 +4938,7 @@
         <argument key="App\Controller\AlbumController:show" type="service_closure" id=".service_locator.KOhdJhL"/>
         <argument key="App\Controller\AlbumController:update" type="service_closure" id=".service_locator.KOhdJhL"/>
         <argument key="App\Controller\RegistrationController:register" type="service_closure" id=".service_locator.r4u1mW2"/>
+        <argument key="App\Controller\UserController:resetPassword" type="service_closure" id=".service_locator.NygMs_p"/>
         <argument key="kernel:loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="kernel:registerContainerConfiguration" type="service_closure" id=".service_locator.y4_Zrx."/>
       </argument>
@@ -6319,7 +6329,7 @@
     <service id="lexik_jwt_authentication.key_loader" alias="lexik_jwt_authentication.key_loader.raw" public="true"/>
     <service id="container.env_var_processors_locator" alias=".service_locator.bJ.4HC5" public="true"/>
     <service id="twig.loader.filesystem" alias="twig.loader.native_filesystem"/>
-    <service id="argument_resolver.controller_locator" alias=".service_locator..Tx_q12"/>
+    <service id="argument_resolver.controller_locator" alias=".service_locator.rOy1P.f"/>
     <service id="doctrine.id_generator_locator" alias=".service_locator.KLVvNIq"/>
     <service id="twig.loader" alias="twig.loader.native_filesystem"/>
     <service id="Psr\Log\LoggerInterface" alias="logger"/>
@@ -6337,6 +6347,7 @@
     <service id=".service_locator.gFlme_s" alias=".service_locator.y4_Zrx."/>
     <service id=".service_locator..MsFB5z" alias=".service_locator.KOhdJhL"/>
     <service id=".service_locator.tSJwMdF" alias=".service_locator.r4u1mW2"/>
+    <service id=".service_locator.ImnDn4v" alias=".service_locator.NygMs_p"/>
     <service id=".service_locator.kHs.Tsl" alias=".service_locator.jUv.zyj"/>
   </services>
 </container>
