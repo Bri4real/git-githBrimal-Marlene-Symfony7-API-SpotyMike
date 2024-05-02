@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
@@ -20,11 +21,13 @@ class UserController extends AbstractController
     private $jwtService;
     private $entityManager;
     private $userRepository;
+    private $passwordHasher;
 
-    public function __construct(EntityManagerInterface $entityManager, UserRepository $userRepository, JWTService $jwtService)
+    public function __construct(EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasherInterface, UserRepository $userRepository, JWTService $jwtService)
     {
         $this->entityManager = $entityManager;
         $this->jwtService = $jwtService;
+        $this->passwordHasher = $userPasswordHasherInterface;
         $this->userRepository = $entityManager->getRepository(User::class);
     }
 
@@ -221,11 +224,6 @@ class UserController extends AbstractController
             ], 400);
         }
 
-
-
-
-
-        // Rate limiter
         $cache = new FilesystemAdapter();
         $cacheKey = 'reset_password_' . urlencode($email);
         $cacheItem = $cache->getItem($cacheKey);
@@ -274,5 +272,78 @@ class UserController extends AbstractController
         }
         $regex = '/^(([^<>()[\]\\.,;:\s@"\']+(\.[^<>()[\]\\.,;:\s@"\']+)*)|("[^"\']+"))@((\[\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\])|(([a-zA-Z\d\-]+\.)+[a-zA-Z]{2,}))$/';
         return preg_match($regex, $email) === 1;
+    }
+
+    #[Route('/reset-password/{token}', name: 'app_reset_password_post', methods: ['POST'])]
+    public function resetPasswordPost(Request $request, string $token): JsonResponse
+    {
+        $requestData = $request->request->all();
+
+        if (empty($token)) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'TToken de réinitialisation manquant ou invalide. Veuillez utiliser le lien fourni dans l\'email de réinitialisation de mot de passe.',
+                'status' => 'Token manquant ou invalide',
+            ], 400);
+        }
+
+        if ($request->headers->get('content-type') === 'application/json') {
+            $requestData = json_decode($request->getContent(), true);
+        }
+
+        $password = $requestData['password'] ?? null;
+
+        if (empty($password)) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Veuillez fournir un nouveau mot de passe.',
+                'status' => 'Nouveau mot de passe manquant'
+            ], 400);
+        }
+
+        $pattern = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/';
+        if (!preg_match($pattern, $password)) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Le nouveau mot de passe ne respecte pas les critères requis. Il doit contenir au moins une majuscule, une minuscule, un chiffre, un caractère spécial et être composé d\'au moins 8 caractères.',
+                'status' => 'Format du nouveau mot de pass invalide'
+            ], 400);
+        }
+
+        $user = $this->userRepository->findOneBy(['resetPasswordToken' => $token]);
+
+        if (!$user) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Token invalide. Veuillez vérifier et réessayer.',
+            ], 404);
+        }
+
+
+        $tokenCreationTime = $user->getResetPasswordTokenCreatedAt();
+        $expirationTime = strtotime('+2 minutes', $tokenCreationTime);
+
+        if (time() > $expirationTime) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Votre token de réinitialisation de mot de passe a expiré. Veuillez refaire une demande de réinitialisation de mot de passe.',
+                'status' => 'Token expiré'
+            ], 410);
+        }
+
+        $hashedPassword = $this->passwordHasher->hashPassword(
+            $user,
+            $password
+        );
+        $user->setPassword($hashedPassword);
+        $user->setResetPasswordToken(null);
+        $user->setUpdateAt(new DateTimeImmutable());
+
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.',
+        ], 200);
     }
 }
