@@ -39,7 +39,6 @@ class AlbumController extends AbstractController
         $this->jwtService = $jwtService;
         $this->entityManager = $entityManager;
         $this->Albumrepository = $entityManager->getRepository(Album::class);
-        $validator = Validation::createValidator();
     }
 
     #[Route('/albums', name: 'album_index', methods: 'GET')]
