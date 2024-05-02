@@ -15,18 +15,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validation;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-
-use App\Entity\ArtistHasLabel;
-use App\Entity\Label;
-use App\Entity\User;
-use Doctrine\ORM\EntityManager;
-use App\Repository\UserRepository;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-
-use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Validator\Constraints\Json;
 
 class AlbumController extends AbstractController
 {
@@ -417,7 +405,6 @@ class AlbumController extends AbstractController
                 $jpegHeader = 'data:image/jpeg;base64';
                 $pngHeader = 'data:image/png;base64';
 
-                // Check if the header matches known image format headers
                 if (strpos($explodeData[0], $jpegHeader) === 0) {
                     $format = 'jpeg';
                 } elseif (strpos($explodeData[0], $pngHeader) === 0) {
