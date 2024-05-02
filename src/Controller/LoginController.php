@@ -101,7 +101,7 @@ class LoginController extends AbstractController
     private function checkEmail(?string $email): bool
     {
         if ($email === null) {
-            return false; // Changement pour retourner false ici
+            return false;
         }
         $regex = '/^(([^<>()[\]\\.,;:\s@"\']+(\.[^<>()[\]\\.,;:\s@"\']+)*)|("[^"\']+"))@((\[\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\])|(([a-zA-Z\d\-]+\.)+[a-zA-Z]{2,}))$/';
         return preg_match($regex, $email) === 1;
@@ -132,7 +132,7 @@ class LoginController extends AbstractController
                 'status' => 'Trop de tentatives (Rate Limiting)'
             ], 429);
 
-            // Envoi de la réponse et arrêt de l'exécution du script
+
             $response->send();
             exit();
         }
