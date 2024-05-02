@@ -176,13 +176,13 @@ class UserController extends AbstractController
 
         $user = $userData;
 
-        $user->setIsActive('Inactive');
+        $user->setIsActive('INACTIVE');
         $user->setUpdateAt(new DateTimeImmutable());
 
         // Deactivate associated artist profile if exists
         if ($user->getArtist()) {
             $artist = $user->getArtist();
-            $artist->setIsActive('Inactive');
+            $artist->setIsActive('INACTIVE');
             $this->entityManager->persist($artist);
         }
 
@@ -191,9 +191,9 @@ class UserController extends AbstractController
 
         return new JsonResponse([
             'success' => true,
-            'message' => 'Votre compte a été avec succès.Nous sommes désolés de vous voir partir.',
+            'message' => 'Votre compte a été désactivé avec succès.Nous sommes désolés de vous voir partir.',
             'status' => 'Succès'
-        ], 201);
+        ], 200);
     }
 
     #[Route('/password-lost', name: 'app_reset_password', methods: ['POST'])]
