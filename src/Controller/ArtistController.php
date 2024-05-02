@@ -344,17 +344,15 @@ class ArtistController extends AbstractController
 
         $tokenData = $this->jwtService->checkToken($request);
 
-        if (is_bool($tokenData)) {
-            return $this->json($this->jwtService->sendJsonErrorToken($tokenData));
-        }
-
-        if (!$tokenData) {
-            return $this->json([
+        if (is_bool($tokenData) || !$tokenData) {
+            return new JsonResponse([
                 'error' => true,
                 'message' => 'Authentification requise. Vous devez être connecté pour effectuer cette action.',
-                'status' => 'Non authentifié'
+                'status' => 'Success',
             ], 401);
         }
+
+
 
 
         $artists = $this->entityManager->getRepository(Artist::class)->findAll();
