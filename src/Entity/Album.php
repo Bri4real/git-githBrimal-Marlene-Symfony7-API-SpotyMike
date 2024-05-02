@@ -215,14 +215,12 @@ class Album
         return $songs;
     }
 
-    // Méthode privée pour formater l'année de l'album
     private function formatYear()
     {
         $year = $this->getYear();
         return $year ? $year->format('Y') : null;
     }
 
-    // Méthode privée pour récupérer le label de l'artiste associé à l'album
     private function getArtistLabel($artist, $year)
     {
         $label = null;

@@ -7,10 +7,13 @@ use App\Services\JWTService;
 use DateTimeImmutable;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
 class UserController extends AbstractController
 {
@@ -188,5 +191,72 @@ class UserController extends AbstractController
             'message' => 'Votre compte a été avec succès.Nous sommes désolés de vous voir partir.',
             'status' => 'Succès'
         ], 201);
+    }
+
+    #[Route('/password-lost', name: 'app_reset_password', methods: ['POST'])]
+
+    public function resetPassword(Request $request, JWTTokenManagerInterface $JWTManager): JsonResponse
+    {
+
+        $requestData = $request->request->all();
+
+        if ($request->headers->get('content-type') === 'application/json') {
+            $requestData = json_decode($request->getContent(), true);
+        }
+
+        $email = $requestData['email'] ?? null;
+        if (empty($email)) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Email manquant. Veuillez fournir votre email pour la récupération du mot de passe.',
+            ], 400);
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Le format de l\'email est invalide. Veuillez entrer un email valide.',
+            ], 400); // 400 Bad Request
+        }
+
+
+        // Rate limiter
+        $cache = new FilesystemAdapter();
+        $cacheKey = 'reset_password_' . urlencode($email);
+        $cacheItem = $cache->getItem($cacheKey);
+        $requestCount = $cacheItem->get() ?? 0;
+        $timeToExpire = 300;
+        $timeToExpireInMinutes = $timeToExpire / 60;
+
+        if ($requestCount >= 3) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Trop de demandes de réinitialisation de mot de passe ( 3 max ). Veuillez attendre avant de réessayer ( Dans ' . $timeToExpireInMinutes . ' min).',
+            ], 429);
+        }
+
+        $cacheItem->set($requestCount + 1);
+        $cacheItem->expiresAfter($timeToExpire);
+        $cache->save($cacheItem);
+
+        $user = $this->userRepository->findOneBy(['email' => $email]);
+
+
+
+        if (!$user) {
+            return new JsonResponse([
+                'error' => true,
+                'message' => 'Aucun compte n\'est associé à cet email. Veuillez vérifier et réessayer.',
+            ], 404);
+        }
+
+        $token = $JWTManager->create($user);
+
+        return new JsonResponse([
+            'success' => true,
+            'token' => $token,
+            'message' => 'Un email de réinitialisation de mot de passe a été envoyé à votre adresse email. Veuillez suivre les instructions contenues dans l\'email pour réinitialiser votre mot de passe.',
+
+        ]);
     }
 }

@@ -28,27 +28,29 @@ return [
     [ // $regexpList
         0 => '{^(?'
                 .'|/_error/(\\d+)(?:\\.([^/]++))?(*:35)'
+                .'|/artist/([^/]++)(*:58)'
                 .'|/label/(?'
                     .'|([^/]++)(?'
-                        .'|(*:63)'
+                        .'|(*:86)'
                     .')'
-                    .'|all(*:74)'
-                    .'|([^/]++)(*:89)'
+                    .'|all(*:97)'
+                    .'|([^/]++)(*:112)'
                 .')'
                 .'|/songs/([^/]++)(?'
-                    .'|(*:115)'
+                    .'|(*:139)'
                 .')'
             .')/?$}sDu',
     ],
     [ // $dynamicRoutes
         35 => [[['_route' => '_preview_error', '_controller' => 'error_controller::preview', '_format' => 'html'], ['code', '_format'], null, null, false, true, null]],
-        63 => [
+        58 => [[['_route' => 'app_get_artist_by_fullname', '_controller' => 'App\\Controller\\ArtistController::getArtistByFullname'], ['fullname'], ['GET' => 0], null, false, true, null]],
+        86 => [
             [['_route' => 'app_update_label', '_controller' => 'App\\Controller\\LabelController::updateLabel'], ['id'], ['PUT' => 0], null, false, true, null],
             [['_route' => 'app_delete_label', '_controller' => 'App\\Controller\\LabelController::deleteLabel'], ['id'], ['DELETE' => 0], null, false, true, null],
         ],
-        74 => [[['_route' => 'app_get_all_labels', '_controller' => 'App\\Controller\\LabelController::getAllLabels'], [], ['GET' => 0], null, false, false, null]],
-        89 => [[['_route' => 'app_get_label_by_id', '_controller' => 'App\\Controller\\LabelController::getLabelById'], ['id'], ['GET' => 0], null, false, true, null]],
-        115 => [
+        97 => [[['_route' => 'app_get_all_labels', '_controller' => 'App\\Controller\\LabelController::getAllLabels'], [], ['GET' => 0], null, false, false, null]],
+        112 => [[['_route' => 'app_get_label_by_id', '_controller' => 'App\\Controller\\LabelController::getLabelById'], ['id'], ['GET' => 0], null, false, true, null]],
+        139 => [
             [['_route' => 'get_song', '_controller' => 'App\\Controller\\SongController::get'], ['id'], ['GET' => 0], null, false, true, null],
             [['_route' => 'update_song', '_controller' => 'App\\Controller\\SongController::update'], ['id'], ['PUT' => 0], null, false, true, null],
             [['_route' => 'delete_song', '_controller' => 'App\\Controller\\SongController::delete'], ['id'], ['DELETE' => 0], null, false, true, null],
