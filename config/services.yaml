@@ -1,3 +1,8 @@
+parameters:
+  Album_Folder: "%kernel.project_dir%/public/uploads/Albums"
+  Songs_Folder: "%kernel.project_dir%/public/uploads/Songs"
+  Avatar_Folder: "%kernel.project_dir%/public/uploads/Artists"
+
 services:
   # default configuration for services in *this* file
   _defaults:
