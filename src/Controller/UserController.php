@@ -209,6 +209,7 @@ class UserController extends AbstractController
             return new JsonResponse([
                 'error' => true,
                 'message' => 'Email manquant. Veuillez fournir votre email pour la récupération du mot de passe.',
+                'status' => 'Email manquant'
             ], 400);
         }
 
@@ -216,6 +217,7 @@ class UserController extends AbstractController
             return new JsonResponse([
                 'error' => true,
                 'message' => 'Le format de l\'email est invalide. Veuillez entrer un email valide.',
+                'status' => 'Format d\'email invalide '
             ], 400);
         }
 
@@ -235,6 +237,7 @@ class UserController extends AbstractController
             return new JsonResponse([
                 'error' => true,
                 'message' => 'Trop de demandes de réinitialisation de mot de passe ( 3 max ). Veuillez attendre avant de réessayer ( Dans ' . $timeToExpireInMinutes . ' min).',
+                'status' => 'Trop de demandes'
             ], 429);
         }
 
@@ -250,6 +253,7 @@ class UserController extends AbstractController
             return new JsonResponse([
                 'error' => true,
                 'message' => 'Aucun compte n\'est associé à cet email. Veuillez vérifier et réessayer.',
+                'status' => 'Email non trouvé'
             ], 404);
         }
 
@@ -259,8 +263,8 @@ class UserController extends AbstractController
             'success' => true,
             'token' => $token,
             'message' => 'Un email de réinitialisation de mot de passe a été envoyé à votre adresse email. Veuillez suivre les instructions contenues dans l\'email pour réinitialiser votre mot de passe.',
-
-        ]);
+            'status' => 'Success'
+        ], 200);
     }
 
     private function checkEmail(?string $email): bool
