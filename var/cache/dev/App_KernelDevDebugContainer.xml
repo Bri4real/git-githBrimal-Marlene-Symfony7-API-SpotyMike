@@ -63,6 +63,9 @@
     </parameter>
     <parameter key="kernel.charset">UTF-8</parameter>
     <parameter key="kernel.container_class">App_KernelDevDebugContainer</parameter>
+    <parameter key="Album_Folder">/Users/brimalmartin/ESIEA PROJECTS/git-githBrimal-Marlene-Symfony7-API-SpotyMike/public/uploads/Albums</parameter>
+    <parameter key="Songs_Folder">/Users/brimalmartin/ESIEA PROJECTS/git-githBrimal-Marlene-Symfony7-API-SpotyMike/public/uploads/Songs</parameter>
+    <parameter key="Avatar_Folder">/Users/brimalmartin/ESIEA PROJECTS/git-githBrimal-Marlene-Symfony7-API-SpotyMike/public/uploads/Artists</parameter>
     <parameter key="event_dispatcher.event_aliases" type="collection">
       <parameter key="Symfony\Component\Console\Event\ConsoleCommandEvent">console.command</parameter>
       <parameter key="Symfony\Component\Console\Event\ConsoleErrorEvent">console.error</parameter>
